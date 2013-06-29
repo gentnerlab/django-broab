@@ -1,5 +1,5 @@
 from django.db import models
-
+from djorm_pgarray.fields import ArrayField
 
 # Models modeled after those in Neo.core
 
@@ -128,7 +128,7 @@ class AnalogSignal(NeoData):
     """A regular sampling of a continuous, analog signal."""
 
     t_start = models.FloatField(default=0.0)
-    signal = [] # set up postgres array
+    signal = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [time]
     units = models.CharField(max_length=255,)
 
     # do validation on sampling rate & period
@@ -184,7 +184,7 @@ class Spike(NeoData):
     time = models.FloatField() # array of floats
     t_units = models.CharField(max_length=255,)
 
-    waveforms = [] # array of floats
+    waveforms = ArrayField(dbtype="float(53)",dimension=2) # array of double precision floats: [channel,time]
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
@@ -198,12 +198,12 @@ class SpikeTrain(NeoData):
     """A set of action potentials (spikes) emitted by the same unit in a period of time (with optional waveforms).
 
     """
-    times = [] # array of floats
+    times = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [spike_time]
     t_start = models.FloatField(default=0.0)
     t_stop = models.FloatField()
     t_units = models.CharField(max_length=255,)
 
-    waveforms = [] # array of floats
+    waveforms = ArrayField(dbtype="float(53)",dimension=3) #  array of double precision floats: [spike,channel,time]
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
@@ -217,7 +217,7 @@ class SpikeTrain(NeoData):
 #     time = models.FloatField() # array of floats
 #     t_units = models.CharField(max_length=255,)
 
-#     waveforms = [] # array of floats
+#     waveforms = ArrayField(dbtype="float(24)",dimension=2) # array of floats: [channel,time]
 #     sampling_rate = models.FloatField(null=True,blank=True)
 #     left_sweep = models.FloatField(null=True,blank=True)
 #     sort = models.BooleanField(default=False)
