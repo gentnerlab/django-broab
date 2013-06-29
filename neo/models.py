@@ -1,5 +1,6 @@
 from django.db import models
 from djorm_pgarray.fields import ArrayField
+from model_utils.managers import InheritanceManager
 
 # Models modeled after those in Neo.core
 
@@ -8,6 +9,8 @@ class NeoModel(models.Model):
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True) # use FileField() instead?
+
+    objects = InheritanceManager()
 
     def __unicode__(self):
         return self.name
@@ -59,7 +62,7 @@ class Segment(NeoContainer):
     to a "trial", "episode", "run", "recording", etc., depending on the experimental context. May contain 
     any of the data objects """
 
-    block = models.ForeignKey(Block,null=True)
+    block = models.ForeignKey(Block,null=True,blank=True,db_index=True)
 
 # Grouping Models
 class NeoGroup(NeoModel):
@@ -119,7 +122,7 @@ class Unit(NeoGroup):
 # Data Models
 class NeoData(NeoModel):
     """ abstract base class for Neo Containers """
-    segment = models.ForeignKey(Segment)
+    segment = models.ForeignKey(Segment,db_index=True)
 
     class Meta(NeoModel.Meta):
         abstract = True
@@ -174,7 +177,6 @@ class IrregularlySampledSignal(NeoData):
     """A representation of a continuous, analog signal acquired at time t_start with a varying sampling interval."""
 
     recording_channel = models.ForeignKey(RecordingChannel)
-    pass
 
 
 
@@ -222,7 +224,7 @@ class SpikeTrain(NeoData):
 #     left_sweep = models.FloatField(null=True,blank=True)
 #     sort = models.BooleanField(default=False)
 
-#     spike_train = models.ForeignKey('SpikeTrainAlt')
+#     spike_train = models.ForeignKey('SpikeTrainAlt',db_index=True)
 #     def __unicode__(self):
 #         return len(self.times)    
 
@@ -243,7 +245,7 @@ class SpikeTrain(NeoData):
 class Event(NeoData):
     """A time point representng an event in the data"""
     time = models.FloatField()
-    label = models.ForeignKey(EventType)
+    label = models.ForeignKey(EventType,db_index=True)
 
     def __unicode__(self):
         return "%s:%s" % (self.label,self.time)    
