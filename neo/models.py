@@ -45,6 +45,7 @@ class NeoContainer(NeoModel):
 
     class Meta(NeoModel.Meta):
         abstract = True
+        ordering = ['-rec_datetime','-file_datetime','index']
 
 class Block(NeoContainer):
     """The top-level container gathering all of the data, discrete and continuous, for a given recording session. 
