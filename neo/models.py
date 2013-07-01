@@ -134,7 +134,6 @@ class AnalogSignal(NeoData):
     signal = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [time]
     units = models.CharField(max_length=255,)
 
-    # do validation on sampling rate & period
     sampling_period = models.FloatField(blank=False)
     sampling_period_units = models.CharField(max_length=255,blank=False)
 
