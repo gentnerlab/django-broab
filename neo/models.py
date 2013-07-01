@@ -2,6 +2,35 @@ from django.db import models
 from djorm_pgarray.fields import ArrayField
 from model_utils.managers import InheritanceManager
 
+
+DISTANCE_CHOICES = (
+    ('m', 'meters'),
+    ('mm', 'millimeters'),
+    ('cm', 'centiimeters'),
+    ('um', 'micrometers'),
+    ('nm', 'nanometers'),
+    )
+
+TIME_CHOICES = (
+    ('h', 'hours'),
+    ('m', 'minutes'),
+    ('s', 'seconds'),
+    ('ms', 'milliseconds'),
+    ('us', 'microseconds'),
+    )
+    POTENTIAL_CHOICES = (
+        ('V', 'volts'),
+        ('mV', 'millivolts'),
+        ('uV', 'microvolts'),
+        )
+    CURRENT_CHOICES = (
+        ('A', 'amps'),
+        ('mA', 'milliamps'),
+        ('uA', 'microamps'),
+        ('nA', 'nanoamps'),
+        )
+
+
 # Models modeled after those in Neo.core
 
 class NeoModel(models.Model):
@@ -22,14 +51,15 @@ class NeoModel(models.Model):
 # Lookup Tables
 class Lookup(models.Model):
     """ abstract base class for all lookup tables """
-    name = models.CharField(max_length=255,blank=False)
+    name = models.CharField(max_length=255,blank=False,unique=True)
     description = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.name   
 
     class Meta:
-        abstract = True 
+        abstract = True
+        ordering = ['name'] 
 
 class EventType(Lookup):
     """ a type of event """
@@ -104,7 +134,8 @@ class RecordingChannel(NeoGroup):
     y_coord = models.FloatField(null=True,blank=True)
     z_coord = models.FloatField(null=True,blank=True)
 
-    coord_units = models.CharField(max_length=255,)
+
+    coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES)
 
     def coordinate(self): 
         """ TODO: might be better to define coordinate as a postgres array or make this return a Quantity
@@ -133,10 +164,11 @@ class AnalogSignal(NeoData):
 
     t_start = models.FloatField(default=0.0)
     signal = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [time]
-    units = models.CharField(max_length=255,)
+    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
+    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
 
     sampling_period = models.FloatField(blank=False)
-    sampling_period_units = models.CharField(max_length=255,blank=False)
+    sampling_period_units = models.CharField(max_length=255,blank=False,choices=TIME_CHOICES)
 
     # dtype = models.CharField(max_length=255,blank=True)
     # copy = models.BooleanField(default=True)
@@ -184,9 +216,10 @@ class Spike(NeoData):
     """One action potential characterized by its time and waveform."""
 
     time = models.FloatField() # array of floats
-    t_units = models.CharField(max_length=255,)
+    t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
 
     waveforms = ArrayField(dbtype="float(53)",dimension=2) # array of double precision floats: [channel,time]
+    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
@@ -206,6 +239,7 @@ class SpikeTrain(NeoData):
     t_units = models.CharField(max_length=255,)
 
     waveforms = ArrayField(dbtype="float(53)",dimension=3) #  array of double precision floats: [spike,channel,time]
+    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
