@@ -247,64 +247,17 @@ class SpikeTrain(NeoData):
     def __unicode__(self):
         return len(self.times) 
 
-# # alternatively we can define the relationship between Spikes & Spike Trains through Foreign Keys
-# class Spike(NeoData):
-#     """One action potential characterized by its time and waveform."""
-#     time = models.FloatField() # array of floats
-#     t_units = models.CharField(max_length=255,)
-
-#     waveforms = ArrayField(dbtype="float(24)",dimension=2) # array of floats: [channel,time]
-#     sampling_rate = models.FloatField(null=True,blank=True)
-#     left_sweep = models.FloatField(null=True,blank=True)
-#     sort = models.BooleanField(default=False)
-
-#     spike_train = models.ForeignKey('SpikeTrainAlt',db_index=True)
-#     def __unicode__(self):
-#         return len(self.times)    
-
-# class SpikeTrainAlt(NeoData):
-#     """ alternative implementation of SpikeTrain """
-
-#     t_start = models.FloatField(default=0.0)
-#     t_stop = models.FloatField()
-
-#     sort = models.BooleanField(default=False)
-
-#     def times(self):
-#         """ build an array of spike times from the times of the associated spikes"""
-#         pass
-#     def waveforms(self):
-#         pass
 
 class Event(NeoData):
     """A time point representng an event in the data"""
     time = models.FloatField()
     label = models.ForeignKey(EventType,db_index=True)
+    duration = models.FloatField(null=True,blank=True)
 
     def __unicode__(self):
         return "%s:%s" % (self.label,self.time)    
 
-## these classes need some work
-
 class EventArray(NeoData):
     """An array of Events
-
-    I'm inclined to make this a ManyToManyField w/ Event w/ methods that will generate 
-    the Neo-formatted attributes on-the-fly.
     """
-    pass
-
-class Epoch(Event):
-    """An interval of time representing a period of time in the data """
-    duration = models.FloatField()
-
-class EpochArray(NeoData):
-    """An array of Epochs
-
-    I'm inclined to make this a ManyToManyField w/ Event w/ methods that will generate 
-    the Neo-formatted attributes on-the-fly.
-
-    """
-    pass
-
-
+    events = models.ManyToManyField('Event')
