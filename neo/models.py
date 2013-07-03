@@ -167,22 +167,28 @@ class AnalogSignal(NeoData):
     signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
     t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
 
-    sampling_period = models.FloatField(blank=False)
-    sampling_period_units = models.CharField(max_length=255,blank=False,choices=TIME_CHOICES)
-
     # dtype = models.CharField(max_length=255,blank=True)
     # copy = models.BooleanField(default=True)
 
     recording_channel = models.ForeignKey(RecordingChannel,null=True,blank=True)
 
-    def sampling_rate(self):
-        """ 1/sampling_period """
-        return 1/self.sampling_period
+    sampling_rate = models.FloatField(blank=False)
 
+    @property
+    def sampling_period(self):
+        """ 1/sampling_rate """
+        return 1/self.sampling_rate
+
+    @sampling_period.setter
+    def sampling_period(self,value):
+        self.sampling_rate = 1/value
+
+    @property
     def duration(self):
         """ len(signal)*sampling_period """
         return float(len(self.signal))*self.sampling_period
 
+    @property
     def t_stop(self):
         """ t_start + duration """
         return self.t_start + self.duration
