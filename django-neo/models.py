@@ -20,9 +20,9 @@ TIME_CHOICES = (
     ('us', 'microseconds'),
     )
 RATE_CHOICES = (
-	('Hz', 'hertz'),
-	('kHz', 'kilohertz'),
-	)
+    ('Hz', 'hertz'),
+    ('kHz', 'kilohertz'),
+    )
 POTENTIAL_CHOICES = (
     ('V', 'volts'),
     ('mV', 'millivolts'),
@@ -36,24 +36,24 @@ CURRENT_CHOICES = (
     )
 
 class Attribute(models.Model):
-	"""key for annotation"""
-	name = models.CharField(max_length=255,blank=False)
-	description = models.TextField(blank=True	)
+    """key for annotation"""
+    name = models.CharField(max_length=255,blank=False)
+    description = models.TextField(blank=True    )
 
-	def __unicode__(self):
-		return self.name
+    def __unicode__(self):
+        return self.name
 
 class Annotation(models.Model):
-	"""annotation class"""
-	attribute = models.ForeignKey(Attribute)
-	value = models.TestField(blank=False)
+    """annotation class"""
+    attribute = models.ForeignKey(Attribute)
+    value_text = models.TextField(blank=True)
 
-	content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
-	def __unicode__(self):
-		return "%s:%s" & (self.key,self.value)
+    def __unicode__(self):
+        return "%s:%s" & (self.key,self.value)
 
 
 
@@ -148,16 +148,16 @@ class RecordingChannelGroup(NeoGroup):
     - for linking several AnalogSignalArray objects across several Segment 
         objects inside a Block.
     - for multielectrode arrays, where spikes may be recorded on more than 
-    	one recording channel, and so the RecordingChannelGroup can be used 
-    	to associate each Unit with the group of recording channels from 
-    	which it was calculated.
+        one recording channel, and so the RecordingChannelGroup can be used 
+        to associate each Unit with the group of recording channels from 
+        which it was calculated.
     - for grouping several RecordingChannel objects. There are many use 
-    	cases for this. For instance, for intracellular recording, it is 
-    	common to record both membrane potentials and currents at the same 
-    	time, so each RecordingChannelGroup may correspond to the 
-    	particular property that is being recorded. For multielectrode 
-    	arrays, RecordingChannelGroup is used to gather all 
-    	RecordingChannel objects of the same array.
+        cases for this. For instance, for intracellular recording, it is 
+        common to record both membrane potentials and currents at the same 
+        time, so each RecordingChannelGroup may correspond to the 
+        particular property that is being recorded. For multielectrode 
+        arrays, RecordingChannelGroup is used to gather all 
+        RecordingChannel objects of the same array.
     
     """
     recordingchannels = models.ManyToManyField('RecordingChannel')
