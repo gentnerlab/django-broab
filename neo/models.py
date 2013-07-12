@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from djorm_pgarray.fields import ArrayField
 from model_utils.managers import InheritanceManager
 
@@ -10,7 +12,6 @@ DISTANCE_CHOICES = (
     ('um', 'micrometers'),
     ('nm', 'nanometers'),
     )
-
 TIME_CHOICES = (
     ('h', 'hours'),
     ('m', 'minutes'),
@@ -18,26 +19,51 @@ TIME_CHOICES = (
     ('ms', 'milliseconds'),
     ('us', 'microseconds'),
     )
-    POTENTIAL_CHOICES = (
-        ('V', 'volts'),
-        ('mV', 'millivolts'),
-        ('uV', 'microvolts'),
-        )
-    CURRENT_CHOICES = (
-        ('A', 'amps'),
-        ('mA', 'milliamps'),
-        ('uA', 'microamps'),
-        ('nA', 'nanoamps'),
-        )
+RATE_CHOICES = (
+	('Hz', 'hertz'),
+	('kHz', 'kilohertz'),
+	)
+POTENTIAL_CHOICES = (
+    ('V', 'volts'),
+    ('mV', 'millivolts'),
+    ('uV', 'microvolts'),
+    )
+CURRENT_CHOICES = (
+    ('A', 'amps'),
+    ('mA', 'milliamps'),
+    ('uA', 'microamps'),
+    ('nA', 'nanoamps'),
+    )
+
+class Attribute(models.Model):
+	"""key for annotation"""
+	name = models.CharField(max_length=255,blank=False)
+	description = models.TextField(blank=True	)
+
+	def __unicode__(self):
+		return self.name
+
+class Annotation(models.Model):
+	"""annotation class"""
+	attribute = models.ForeignKey(Attribute)
+	value = models.TestField(blank=False)
+
+	content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+
+	def __unicode__(self):
+		return "%s:%s" & (self.key,self.value)
+
 
 
 # Models modeled after those in Neo.core
-
 class NeoModel(models.Model):
     """ abstract base class for all Neo Models"""
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
-    file_origin = models.CharField(max_length=255,blank=True) # use FileField() instead?
+    file_origin = models.CharField(max_length=255,blank=True)
+    annotations = generic.GenericRelation(Annotation)
 
     objects = InheritanceManager()
 
@@ -78,8 +104,14 @@ class NeoContainer(NeoModel):
         ordering = ['-rec_datetime','-file_datetime','index']
 
 class Block(NeoContainer):
-    """The top-level container gathering all of the data, discrete and continuous, for a given recording session. 
-    Contains Segment and RecordingChannelGroup objects."""
+    """
+
+    The top-level container gathering all of the data, discrete and
+    continuous, for a given recording session. 
+
+    Contains Segment and RecordingChannelGroup objects.
+
+    """
 
     def list_units(self):
         pass
@@ -88,10 +120,18 @@ class Block(NeoContainer):
 
        
 class Segment(NeoContainer):
-    """A container for heterogeneous discrete or continous data sharing a common clock (time basis) but not 
-    necessarily the same sampling rate, start time or end time. A Segment can be considered as equivalent 
-    to a "trial", "episode", "run", "recording", etc., depending on the experimental context. May contain 
-    any of the data objects """
+    """ Segment
+
+    A container for heterogeneous discrete or continous data sharing a 
+    common clock (time basis) but not necessarily the same sampling rate, 
+    start time or end time. 
+
+    A Segment can be considered as equivalent to a "trial", "episode", 
+    "run", "recording", etc., depending on the experimental context. 
+
+    May contain any of the data objects 
+
+    """
 
     block = models.ForeignKey(Block,null=True,blank=True,db_index=True)
 
@@ -105,14 +145,20 @@ class RecordingChannelGroup(NeoGroup):
     """A group for associated RecordingChannel objects. 
 
     This has several possible uses:
-    - for linking several AnalogSignalArray objects across several Segment objects inside a Block.
-    - for multielectrode arrays, where spikes may be recorded on more than one recording channel, and so the 
-        RecordingChannelGroup can be used to associate each Unit with the group of recording channels from which 
-        it was calculated.
-    - for grouping several RecordingChannel objects. There are many use cases for this. For instance, for intracellular 
-        recording, it is common to record both membrane potentials and currents at the same time, so each 
-        RecordingChannelGroup may correspond to the particular property that is being recorded. For multielectrode arrays, 
-        RecordingChannelGroup is used to gather all RecordingChannel objects of the same array.
+    - for linking several AnalogSignalArray objects across several Segment 
+        objects inside a Block.
+    - for multielectrode arrays, where spikes may be recorded on more than 
+    	one recording channel, and so the RecordingChannelGroup can be used 
+    	to associate each Unit with the group of recording channels from 
+    	which it was calculated.
+    - for grouping several RecordingChannel objects. There are many use 
+    	cases for this. For instance, for intracellular recording, it is 
+    	common to record both membrane potentials and currents at the same 
+    	time, so each RecordingChannelGroup may correspond to the 
+    	particular property that is being recorded. For multielectrode 
+    	arrays, RecordingChannelGroup is used to gather all 
+    	RecordingChannel objects of the same array.
+    
     """
     recordingchannels = models.ManyToManyField('RecordingChannel')
 
@@ -125,8 +171,12 @@ class RecordingChannelGroup(NeoGroup):
 
 
 class RecordingChannel(NeoGroup):
-    """Links AnalogSignal, SpikeTrain objects that come from the same logical and/or physical channel inside a Block, 
-    possibly across several Segment objects."""
+    """
+
+    Links AnalogSignal, SpikeTrain objects that come from the same logical 
+    and/or physical channel inside a Block, possibly across several Segment 
+    objects.
+    """
 
     index = models.PositiveIntegerField(blank=False,null=False)
 
@@ -138,15 +188,21 @@ class RecordingChannel(NeoGroup):
     coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES)
 
     def coordinate(self): 
-        """ TODO: might be better to define coordinate as a postgres array or make this return a Quantity
+        """ 
+
+        TODO: might be better to define coordinate as a postgres array?
 
         """
         return (self.x_coord, self.y_coord, self.z_coord)
 
 class Unit(NeoGroup):
-    """A Unit gathers all the SpikeTrain objects within a common Block, possibly across several Segments, that have been 
-    emitted by the same cell. A Unit is linked to RecordingChannelGroup objects from which it was detected.
+    """
 
+    A Unit gathers all the SpikeTrain objects within a common Block, 
+    possibly across several Segments, that have been emitted by the same 
+    cell. 
+
+    A Unit is linked to RecordingChannelGroup objects from which it was detected.
     """
     block = models.ForeignKey(Block)
     recording_channel_group = models.ManyToManyField('RecordingChannelGroup')
@@ -163,7 +219,7 @@ class AnalogSignal(NeoData):
     """A regular sampling of a continuous, analog signal."""
 
     t_start = models.FloatField(default=0.0)
-    signal = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [time]
+    signal = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [time]
     signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
     t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
 
@@ -200,31 +256,42 @@ class AnalogSignalArray(NeoData):
     """A regular sampling of a multichannel continuous analog signal.
 
 
+    ----
     not sure what to do with this... 
 
-    I'm inclined to make this a ManyToManyField w/ AnalogSignal w/ a method that will generate 
-    a numpy array on-the-fly.
+    I'm inclined to make this a ManyToManyField w/ AnalogSignal w/ a method 
+    that will generate a numpy array on-the-fly.
 
-    alternatively, Neo people were advocating making AnalogSignalArray the default and letting AnalogSignal be a 1D array.
+    alternatively, Neo people were advocating making AnalogSignalArray the 
+    default and letting AnalogSignal be a 1D array.
     """
     
     analog_signals = models.ManyToManyField('AnalogSignal')
 
 
 class IrregularlySampledSignal(NeoData):
-    """A representation of a continuous, analog signal acquired at time t_start with a varying sampling interval."""
+    """
+    
+    A representation of a continuous, analog signal acquired at time 
+    t_start with a varying sampling interval.
+
+    """
 
     recording_channel = models.ForeignKey(RecordingChannel)
 
 
 
 class Spike(NeoData):
-    """One action potential characterized by its time and waveform."""
+    """
 
-    time = models.FloatField() # array of floats
+    One action potential characterized by its time and waveform.
+
+    """
+
+    time = models.FloatField()
     t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
 
-    waveforms = ArrayField(dbtype="float(53)",dimension=2) # array of double precision floats: [channel,time]
+    waveforms = ArrayField(dbtype="float(53)",dimension=2) # dimensions: [channel,time]
     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
@@ -236,15 +303,18 @@ class Spike(NeoData):
         return self.time    
 
 class SpikeTrain(NeoData):
-    """A set of action potentials (spikes) emitted by the same unit in a period of time (with optional waveforms).
+    """
+
+    A set of action potentials (spikes) emitted by the same unit in a 
+    period of time (with optional waveforms).
 
     """
-    times = ArrayField(dbtype="float(53)",dimension=1) # array of double precision floats: [spike_time]
+    times = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [spike_time]
     t_start = models.FloatField(default=0.0)
     t_stop = models.FloatField()
     t_units = models.CharField(max_length=255,)
 
-    waveforms = ArrayField(dbtype="float(53)",dimension=3) #  array of double precision floats: [spike,channel,time]
+    waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
@@ -255,7 +325,9 @@ class SpikeTrain(NeoData):
 
 
 class Event(NeoData):
-    """A time point representng an event in the data"""
+    """A time point representng an event in the data
+
+    """
     time = models.FloatField()
     label = models.ForeignKey(EventType,db_index=True)
     duration = models.FloatField(null=True,blank=True)
@@ -265,5 +337,6 @@ class Event(NeoData):
 
 class EventArray(NeoData):
     """An array of Events
+    
     """
     events = models.ManyToManyField('Event')
