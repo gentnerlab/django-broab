@@ -227,9 +227,9 @@ class AnalogSignal(NeoData):
     """A regular sampling of a continuous, analog signal."""
 
     t_start = models.FloatField(default=0.0)
+    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
     signal = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [time]
     signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
-    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
 
     # dtype = models.CharField(max_length=255,blank=True)
     # copy = models.BooleanField(default=True)
@@ -286,7 +286,14 @@ class IrregularlySampledSignal(NeoData):
     """
 
     recording_channel = models.ForeignKey(RecordingChannel)
-    
+
+    times = ArrayField(dbtype="float(53)",dimension=1)
+    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
+    signal = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [time]
+    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
+
+    def __unicode__(self):
+        return len(self.times)
 
 
 
