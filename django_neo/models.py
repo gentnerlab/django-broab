@@ -193,7 +193,7 @@ class RecordingChannel(NeoGroup):
     z_coord = models.FloatField(null=True,blank=True)
 
 
-    coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES)
+    coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES,blank=True)
 
     def coordinate(self): 
         """ 
@@ -212,7 +212,7 @@ class Unit(NeoGroup):
 
     A Unit is linked to RecordingChannelGroup objects from which it was detected.
     """
-    block = models.ForeignKey(Block)
+    block = models.ForeignKey(Block,null=True,blank=True)
     recording_channel_group = models.ManyToManyField('RecordingChannelGroup')
 
 # Data Models
