@@ -260,21 +260,21 @@ class AnalogSignal(NeoData):
     def __unicode__(self):
         return self.name
 
-class AnalogSignalArray(NeoData):
-    """A regular sampling of a multichannel continuous analog signal.
+# class AnalogSignalArray(NeoData):
+#     """A regular sampling of a multichannel continuous analog signal.
 
 
-    ----
-    not sure what to do with this... 
+#     ----
+#     not sure what to do with this... 
 
-    I'm inclined to make this a ManyToManyField w/ AnalogSignal w/ a method 
-    that will generate a numpy array on-the-fly.
+#     I'm inclined to make this a ManyToManyField w/ AnalogSignal w/ a method 
+#     that will generate a numpy array on-the-fly.
 
-    alternatively, Neo people were advocating making AnalogSignalArray the 
-    default and letting AnalogSignal be a 1D array.
-    """
+#     alternatively, Neo people were advocating making AnalogSignalArray the 
+#     default and letting AnalogSignal be a 1D array.
+#     """
     
-    analog_signals = models.ManyToManyField('AnalogSignal')
+#     analog_signals = models.ManyToManyField('AnalogSignal')
 
 
 class IrregularlySampledSignal(NeoData):
@@ -286,6 +286,7 @@ class IrregularlySampledSignal(NeoData):
     """
 
     recording_channel = models.ForeignKey(RecordingChannel)
+    
 
 
 
