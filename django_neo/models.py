@@ -38,7 +38,7 @@ CURRENT_CHOICES = (
 class Attribute(models.Model):
     """key for annotation"""
     name = models.CharField(max_length=255,blank=False)
-    description = models.TextField(blank=True    )
+    description = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.name
@@ -46,7 +46,17 @@ class Attribute(models.Model):
 class Annotation(models.Model):
     """annotation class"""
     attribute = models.ForeignKey(Attribute)
-    value_text = models.TextField(blank=True)
+    # value_boolean = models.NullBooleanField(null=True)
+    # value_text = models.TextField(blank=True)
+    # value_integer = models.IntegerField(null=True,blank=True)
+    # value_float = models.FloatField(null=True,blank=True)
+    # value_date = models.DateField(null=True,blank=True)
+    # value_time = models.TimeField(null=True,blank=True)
+    # value_datetime = models.DateTimeField(null=True,blank=True)
+    # value_array_text = ArrayField(dbtype="text",dimension=1)
+    # value_array_integer = ArrayField(dbtype="integer",dimension=1)
+    # value_array_float = ArrayField(dbtype="float(53)",dimension=1)
+    value = models.TextField(blank=True)
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -54,8 +64,6 @@ class Annotation(models.Model):
 
     def __unicode__(self):
         return "%s:%s" & (self.key,self.value)
-
-
 
 # Models modeled after those in Neo.core
 class NeoModel(models.Model):
