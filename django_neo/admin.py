@@ -1,8 +1,8 @@
 from django.contrib import admin
-from neo.models import Block, Segment
-from neo.models import RecordingChannelGroup, RecordingChannel, Unit
-from neo.models import AnalogSignal, AnalogSignalArray, Spike, SpikeTrain, Event, Epoch
-from neo.models import EventType
+from django_neo.models import Block, Segment
+from django_neo.models import RecordingChannelGroup, RecordingChannel, Unit
+from django_neo.models import AnalogSignal, SpikeTrain, Event,
+from django_neo.models import EventType
 
 admin.site.register(Block)
 
@@ -16,14 +16,8 @@ admin.site.register(Unit)
 
 admin.site.register(AnalogSignal)
 
-admin.site.register(AnalogSignalArray)
-
-admin.site.register(Spike)
-
 admin.site.register(SpikeTrain)
 
 admin.site.register(Event)
-
-admin.site.register(Epoch)
 
 admin.site.register(EventType)
