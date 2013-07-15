@@ -63,7 +63,7 @@ class Annotation(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
-        return "%s:%s" & (self.key,self.value)
+        return "{\'%s\': \'%s\'}" % (self.attribute,self.value)
 
 # Models modeled after those in Neo.core
 class NeoModel(models.Model):
@@ -71,7 +71,8 @@ class NeoModel(models.Model):
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True)
-    annotations = generic.GenericRelation(Annotation)
+
+    annotations = generic.GenericRelation(Annotation)    
 
     objects = InheritanceManager()
 
@@ -168,6 +169,7 @@ class RecordingChannelGroup(NeoGroup):
         RecordingChannel objects of the same array.
     
     """
+    block = models.ForeignKey(Block,null=True,blank=True)
     recordingchannels = models.ManyToManyField('RecordingChannel')
 
     def channel_names(self):
@@ -212,7 +214,6 @@ class Unit(NeoGroup):
 
     A Unit is linked to RecordingChannelGroup objects from which it was detected.
     """
-    block = models.ForeignKey(Block,null=True,blank=True)
     recording_channel_group = models.ManyToManyField('RecordingChannelGroup')
 
 # Data Models
@@ -328,7 +329,7 @@ class SpikeTrain(NeoData):
     times = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [spike_time]
     t_start = models.FloatField(default=0.0)
     t_stop = models.FloatField()
-    t_units = models.CharField(max_length=255,)
+    t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
 
     waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
