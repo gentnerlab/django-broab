@@ -289,26 +289,26 @@ class IrregularlySampledSignal(NeoData):
 
 
 
-class Spike(NeoData):
-    """
+# class Spike(NeoData):
+#     """
 
-    One action potential characterized by its time and waveform.
+#     One action potential characterized by its time and waveform.
 
-    """
+#     """
 
-    time = models.FloatField()
-    t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
+#     time = models.FloatField()
+#     t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
 
-    waveforms = ArrayField(dbtype="float(53)",dimension=2) # dimensions: [channel,time]
-    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
-    sampling_rate = models.FloatField(null=True,blank=True)
-    left_sweep = models.FloatField(null=True,blank=True)
-    sort = models.BooleanField(default=False)
+#     waveforms = ArrayField(dbtype="float(53)",dimension=2) # dimensions: [channel,time]
+#     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
+#     sampling_rate = models.FloatField(null=True,blank=True)
+#     left_sweep = models.FloatField(null=True,blank=True)
+#     sort = models.BooleanField(default=False)
 
-    unit = models.ForeignKey('Unit')
+#     unit = models.ForeignKey('Unit')
 
-    def __unicode__(self):
-        return self.time    
+#     def __unicode__(self):
+#         return self.time    
 
 class SpikeTrain(NeoData):
     """
@@ -343,8 +343,8 @@ class Event(NeoData):
     def __unicode__(self):
         return "%s:%s" % (self.label,self.time)    
 
-class EventArray(NeoData):
-    """An array of Events
+# class EventArray(NeoData):
+#     """An array of Events
     
-    """
-    events = models.ManyToManyField('Event')
+#     """
+#     events = models.ManyToManyField('Event')
