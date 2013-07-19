@@ -1,9 +1,11 @@
 from django.contrib import admin
+from django import forms
 from django_neo.models import Block, Segment
 from django_neo.models import RecordingChannelGroup, RecordingChannel, Unit
 from django_neo.models import AnalogSignal, SpikeTrain, Event
 from django_neo.models import EventType
 from django_neo.models import Annotation
+from djorm_pgarray.fields import ArrayFormField
 from genericadmin.admin import GenericAdminModelAdmin, GenericStackedInline
 
 class AnnotationInline(GenericStackedInline):
@@ -57,7 +59,15 @@ admin.site.register(Unit)
 
 admin.site.register(AnalogSignal)
 
-admin.site.register(SpikeTrain)
+class SpikeTrainForm(forms.ModelForm):
+    class Meta:
+        model = SpikeTrain
+        times = ArrayFormField(delim=',') # leave blank for default ','
+
+class SpikeTrainAdmin(admin.ModelAdmin):
+    form = SpikeTrainForm
+
+admin.site.register(SpikeTrain,SpikeTrainAdmin)
 
 admin.site.register(Event)
 

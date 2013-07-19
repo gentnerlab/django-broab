@@ -4,7 +4,6 @@ from django.contrib.contenttypes.models import ContentType
 from djorm_pgarray.fields import ArrayField
 from model_utils.managers import InheritanceManager
 
-
 DISTANCE_CHOICES = (
     ('m', 'meters'),
     ('mm', 'millimeters'),
@@ -38,7 +37,7 @@ CURRENT_CHOICES = (
 class Attribute(models.Model):
     """key for annotation"""
     name = models.CharField(max_length=255,blank=False)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)  
 
     def __unicode__(self):
         return self.name
@@ -46,16 +45,6 @@ class Attribute(models.Model):
 class Annotation(models.Model):
     """annotation class"""
     attribute = models.ForeignKey(Attribute)
-    # value_boolean = models.NullBooleanField(null=True)
-    # value_text = models.TextField(blank=True)
-    # value_integer = models.IntegerField(null=True,blank=True)
-    # value_float = models.FloatField(null=True,blank=True)
-    # value_date = models.DateField(null=True,blank=True)
-    # value_time = models.TimeField(null=True,blank=True)
-    # value_datetime = models.DateTimeField(null=True,blank=True)
-    # value_array_text = ArrayField(dbtype="text",dimension=1)
-    # value_array_integer = ArrayField(dbtype="integer",dimension=1)
-    # value_array_float = ArrayField(dbtype="float(53)",dimension=1)
     value = models.TextField(blank=True)
 
     content_type = models.ForeignKey(ContentType)
@@ -121,11 +110,7 @@ class Block(NeoContainer):
     Contains Segment and RecordingChannelGroup objects.
 
     """
-
-    def list_units(self):
-        pass
-    def list_recordingchannels(self):
-        pass
+    pass
 
        
 class Segment(NeoContainer):
@@ -142,7 +127,7 @@ class Segment(NeoContainer):
 
     """
 
-    block = models.ForeignKey(Block,null=True,blank=True,db_index=True)
+    block = models.ForeignKey(Block,null=True,blank=True,db_index=True,related_name='segments')
 
 # Grouping Models
 class NeoGroup(NeoModel):
@@ -169,8 +154,8 @@ class RecordingChannelGroup(NeoGroup):
         RecordingChannel objects of the same array.
     
     """
-    block = models.ForeignKey(Block,null=True,blank=True)
-    recordingchannels = models.ManyToManyField('RecordingChannel')
+    block = models.ForeignKey(Block,null=True,blank=True,related_name='recording_channel_groups')
+    recording_channels = models.ManyToManyField('RecordingChannel',related_name='recording_channel_groups')
 
     def channel_names(self):
         """get names of associated recording channels"""
@@ -214,12 +199,16 @@ class Unit(NeoGroup):
 
     A Unit is linked to RecordingChannelGroup objects from which it was detected.
     """
-    recording_channel_group = models.ManyToManyField('RecordingChannelGroup')
+    recording_channel_group = models.ManyToManyField('RecordingChannelGroup',related_name='units')
 
 # Data Models
 class NeoData(NeoModel):
-    """ abstract base class for Neo Containers """
-    segment = models.ForeignKey(Segment,db_index=True)
+    """ abstract base class for Neo Data """
+
+    """ CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
+    This will cause problems if NeoData is inherited from any other apps, but will ensure that all 
+    NeoData objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
+    segment = models.ForeignKey(Segment,db_index=True,related_name="%(class)ss")
 
     class Meta(NeoModel.Meta):
         abstract = True
@@ -228,12 +217,9 @@ class AnalogSignal(NeoData):
     """A regular sampling of a continuous, analog signal."""
 
     t_start = models.FloatField(default=0.0)
-    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
+    t_units = models.CharField(max_length=16,choices=TIME_CHOICES,blank=True)
     signal = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [time]
-    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
-
-    # dtype = models.CharField(max_length=255,blank=True)
-    # copy = models.BooleanField(default=True)
+    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES,blank=True)
 
     recording_channel = models.ForeignKey(RecordingChannel,null=True,blank=True)
 
@@ -242,11 +228,11 @@ class AnalogSignal(NeoData):
     @property
     def sampling_period(self):
         """ 1/sampling_rate """
-        return 1/self.sampling_rate
+        return 1.0/self.sampling_rate
 
     @sampling_period.setter
     def sampling_period(self,value):
-        self.sampling_rate = 1/value
+        self.sampling_rate = 1.0/value
 
     @property
     def duration(self):
@@ -261,22 +247,6 @@ class AnalogSignal(NeoData):
     def __unicode__(self):
         return self.name
 
-# class AnalogSignalArray(NeoData):
-#     """A regular sampling of a multichannel continuous analog signal.
-
-
-#     ----
-#     not sure what to do with this... 
-
-#     I'm inclined to make this a ManyToManyField w/ AnalogSignal w/ a method 
-#     that will generate a numpy array on-the-fly.
-
-#     alternatively, Neo people were advocating making AnalogSignalArray the 
-#     default and letting AnalogSignal be a 1D array.
-#     """
-    
-#     analog_signals = models.ManyToManyField('AnalogSignal')
-
 
 class IrregularlySampledSignal(NeoData):
     """
@@ -289,35 +259,13 @@ class IrregularlySampledSignal(NeoData):
     recording_channel = models.ForeignKey(RecordingChannel)
 
     times = ArrayField(dbtype="float(53)",dimension=1)
-    t_units = models.CharField(max_length=16,choices=TIME_CHOICES)
+    t_units = models.CharField(max_length=16,choices=TIME_CHOICES,blank=True)
     signal = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [time]
-    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES)
+    signal_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES+CURRENT_CHOICES,blank=True)
 
     def __unicode__(self):
-        return len(self.times)
-
-
-
-# class Spike(NeoData):
-#     """
-
-#     One action potential characterized by its time and waveform.
-
-#     """
-
-#     time = models.FloatField()
-#     t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
-
-#     waveforms = ArrayField(dbtype="float(53)",dimension=2) # dimensions: [channel,time]
-#     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
-#     sampling_rate = models.FloatField(null=True,blank=True)
-#     left_sweep = models.FloatField(null=True,blank=True)
-#     sort = models.BooleanField(default=False)
-
-#     unit = models.ForeignKey('Unit')
-
-#     def __unicode__(self):
-#         return self.time    
+        return str(len(self.times))
+ 
 
 class SpikeTrain(NeoData):
     """
@@ -329,16 +277,16 @@ class SpikeTrain(NeoData):
     times = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [spike_time]
     t_start = models.FloatField(default=0.0)
     t_stop = models.FloatField()
-    t_units = models.CharField(max_length=255,choices=TIME_CHOICES)
+    t_units = models.CharField(max_length=255,choices=TIME_CHOICES,blank=True)
 
     waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
-    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
+    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES,blank=True)
     sampling_rate = models.FloatField(null=True,blank=True)
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return len(self.times) 
+        return str(len(self.times))
 
 
 class Event(NeoData):
@@ -351,9 +299,3 @@ class Event(NeoData):
 
     def __unicode__(self):
         return "%s:%s" % (self.label,self.time)    
-
-# class EventArray(NeoData):
-#     """An array of Events
-    
-#     """
-#     events = models.ManyToManyField('Event')
