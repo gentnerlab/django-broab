@@ -10,8 +10,8 @@ setup(
     name='django-neo',
     version='0.1',
     requires=[
-        #'djorm-ext-pgarray>=0.6',
-        'django-model-utils',
+        # 'djorm-ext-pgarray>=0.6',
+        # 'django-model-utils',
         ],
     packages=['django_neo'],
     include_package_data=True,
