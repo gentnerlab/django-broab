@@ -9,9 +9,13 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='django-neo',
     version='0.1',
+    requires=[
+        'djorm-ext-pgarray>=0.6',
+        'django-model-utils',
+        ],
     packages=['django_neo'],
     include_package_data=True,
-    license='BSD License',  # example license
+    license='BSD License',
     description='A simple Django app to maintain objects from Python-Neo.',
     long_description=README,
     url='https://github.com/gentnerlab/django-neo',
@@ -21,7 +25,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License', # example license
+        'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
