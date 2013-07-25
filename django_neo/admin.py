@@ -59,13 +59,12 @@ admin.site.register(Unit)
 
 admin.site.register(AnalogSignal)
 
-class SpikeTrainForm(forms.ModelForm):
-    class Meta:
-        model = SpikeTrain
-        times = ArrayFormField(delim=',') # leave blank for default ','
-
 class SpikeTrainAdmin(admin.ModelAdmin):
-    form = SpikeTrainForm
+    fields = ('t_start','t_stop')
+    readonly_fields = ('n_spikes',)
+
+    def n_spikes(self,instance):
+        return str(len(instance.times))
 
 admin.site.register(SpikeTrain,SpikeTrainAdmin)
 

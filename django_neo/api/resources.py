@@ -1,6 +1,7 @@
 import ast
 from tastypie import fields
 from tastypie.resources import ModelResource
+from tastypie.authentication import BasicAuthentication
 from django_neo.models import Block, Segment
 from django_neo.models import RecordingChannelGroup, RecordingChannel, Unit
 from django_neo.models import AnalogSignal, IrregularlySampledSignal, SpikeTrain, Event
@@ -9,18 +10,11 @@ from tastypie.serializers import Serializer
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 
 class BlockResource(ModelResource):
-    segments = fields.ToManyField('django_neo.api.resources.SegmentResource',
-                                  'Segments',
-                                  null=True,
-                                  blank=True,
-                                  full=True,
-                                  )
+    segments = fields.ToManyField('django_neo.api.resources.SegmentResource','Segments',
+                                  null=True,blank=True,full=True)
     recording_channel_groups = fields.ToManyField('django_neo.api.resources.RecordingChannelGroupResource',
                                                   'recording_channel_groups',
-                                                  null=True,
-                                                  blank=True,
-                                                  full=True,
-                                                  )
+                                                  null=True,blank=True,full=True)
 
     class Meta():
         queryset = Block.objects.all()
@@ -30,34 +24,24 @@ class BlockResource(ModelResource):
             'description': ALL,
             'file_origin': ALL,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 
 class SegmentResource(ModelResource):
-    block = fields.ToOneField(BlockResource,
-                              'block',
-                              null=True,
-                              blank=True,
-                              )
-    analogsignals = fields.ToManyField('django_neo.api.resources.AnalogSignalResource',
-                                        'analogsignals',
-                                        null=True,
-                                        blank=True,
-                                        )
+    block = fields.ToOneField(BlockResource,'block',
+                              null=True,blank=True)
+    analogsignals = fields.ToManyField('django_neo.api.resources.AnalogSignalResource','analogsignals',
+                                        null=True,blank=True)
     irregularlysampledsignals = fields.ToManyField('django_neo.api.resources.IrregularlySampledSignalResource',
                                                      'irregularlysampledsignals',
-                                                     null=True,
-                                                     blank=True,
-                                                     )
+                                                     null=True,blank=True)
     spiketrains = fields.ToManyField('django_neo.api.resources.SpikeTrainResource',
                                       'spiketrains',
-                                      null=True,
-                                      blank=True,
-                                      )
+                                      null=True,blank=True)
     events = fields.ToManyField('django_neo.api.resources.EventResource',
                                 'events',
-                                null=True,
-                                blank=True,
-                                )
+                                null=True,blank=True)
 
     class Meta:
         queryset = Segment.objects.all()
@@ -68,35 +52,35 @@ class SegmentResource(ModelResource):
             'file_origin': ALL,
             'block': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class RecordingChannelGroupResource(ModelResource):
     recording_channels = fields.ToManyField('django_neo.api.resources.RecordingChannelResource',
                                             'recording_channels',
-                                            null=True,
-                                            blank=True,
-                                            full=True,
-                                            )
+                                            null=True,blank=True,full=True)
     units = fields.ToManyField('django_neo.api.resources.UnitResource',
                                'units',
-                               null=True,
-                               blank=True,
-                               )
+                               null=True,blank=True)
 
     class Meta:
         queryset = RecordingChannelGroup.objects.all()
         resource_name = 'recording_channel_group'
+        filtering = {
+            'name': ALL,
+            'description': ALL,
+            'file_origin': ALL,
+        }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class RecordingChannelResource(ModelResource):
     analog_signals = fields.ToManyField('django_neo.api.resources.AnalogSignalResource',
                                         'analog_signals',
-                                        null=True,
-                                        blank=True,
-                                        )
+                                        null=True,blank=True)
     recording_channel_groups = fields.ToManyField('django_neo.api.resources.RecordingChannelGroupResource',
                                                   'recording_channel_groups',
-                                                  null=True,
-                                                  blank=True,
-                                                  )
+                                                  null=True,blank=True)
     class Meta:
         queryset = RecordingChannel.objects.all()
         resource_name = 'recording_channel'
@@ -106,6 +90,8 @@ class RecordingChannelResource(ModelResource):
             'file_origin': ALL,
             'block': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class UnitResource(ModelResource):
     recording_channel_group = fields.ToOneField('django_neo.api.resources.RecordingChannelGroupResource','recording_channel_groups')
@@ -121,6 +107,8 @@ class UnitResource(ModelResource):
             'spike_trains': ALL_WITH_RELATIONS,
             'recording_channel_group': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class AnalogSignalResource(ModelResource):
     segment = fields.ToOneField('django_neo.api.resources.SegmentResource','segments')
@@ -135,6 +123,8 @@ class AnalogSignalResource(ModelResource):
             'file_origin': ALL,
             'segment': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class IrregularlySampledSignalResource(ModelResource):
     segment = fields.ToOneField('django_neo.api.resources.SegmentResource','segments')
@@ -148,14 +138,13 @@ class IrregularlySampledSignalResource(ModelResource):
             'file_origin': ALL,
             'segment': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class SpikeTrainResource(ModelResource):
     segment = fields.ToOneField('django_neo.api.resources.SegmentResource','segment')
-    unit = fields.ToOneField('django_neo.api.resources.UnitResource',
-                             'units',
-                             null=True,
-                             blank=True,
-                             )
+    unit = fields.ToOneField('django_neo.api.resources.UnitResource','units',
+                             null=True,blank=True)
 
     class Meta:
         queryset = SpikeTrain.objects.all()
@@ -167,6 +156,8 @@ class SpikeTrainResource(ModelResource):
             'segment': ALL_WITH_RELATIONS,
             'unit': ALL_WITH_RELATIONS
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
     def dehydrate_times(self,bundle):
         return ast.literal_eval(bundle.data['times'])
@@ -185,6 +176,8 @@ class EventTypeResource(ModelResource):
             'segment': ALL_WITH_RELATIONS,
             'events': ALL_WITH_RELATIONS,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
 
 class EventResource(ModelResource):
     segment = fields.ToOneField('django_neo.api.resources.SegmentResource','segments')
@@ -200,3 +193,5 @@ class EventResource(ModelResource):
             'segment': ALL_WITH_RELATIONS,
             'event_type': ALL,
         }
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
