@@ -2,6 +2,7 @@ import ast
 from tastypie import fields
 from tastypie.resources import ModelResource
 from tastypie.authentication import BasicAuthentication
+from tastypie.authorization import DjangoAuthorization
 from django_neo.models import Block, Segment
 from django_neo.models import RecordingChannelGroup, RecordingChannel, Unit
 from django_neo.models import AnalogSignal, IrregularlySampledSignal, SpikeTrain, Event

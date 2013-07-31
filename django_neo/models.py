@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from djorm_hstore.fields import DictionaryField
+from djorm_hstore.models import HStoreManager
 from djorm_pgarray.fields import ArrayField
 from model_utils.managers import InheritanceManager
 
@@ -34,36 +36,16 @@ CURRENT_CHOICES = (
     ('nA', 'nanoamps'),
     )
 
-class Attribute(models.Model):
-    """key for annotation"""
-    name = models.CharField(max_length=255,blank=False)
-    description = models.TextField(blank=True)  
-
-    def __unicode__(self):
-        return self.name
-
-class Annotation(models.Model):
-    """annotation class"""
-    attribute = models.ForeignKey(Attribute)
-    value = models.TextField(blank=True)
-
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
-
-    def __unicode__(self):
-        return "{\'%s\': \'%s\'}" % (self.attribute,self.value)
-
 # Models modeled after those in Neo.core
-class NeoModel(models.Model):
+class BaseModel(models.Model):
     """ abstract base class for all Neo Models"""
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True)
+    annotations = DictionaryField(db_index=True)
 
-    annotations = generic.GenericRelation(Annotation)    
-
-    objects = InheritanceManager()
+    objects = HStoreManager() 
+    inherited_objects = InheritanceManager()
 
     def __unicode__(self):
         return self.name
@@ -91,17 +73,17 @@ class EventType(Lookup):
         return self.name 
 
 # Container Models
-class NeoContainer(NeoModel):
+class ContainerModel(BaseModel):
     """ abstract base class for Neo Containers """
     file_datetime = models.DateTimeField(null=True,blank=True)
     rec_datetime = models.DateTimeField(null=True,blank=True)
     index = models.PositiveIntegerField(null=True,blank=True)
 
-    class Meta(NeoModel.Meta):
+    class Meta(BaseModel.Meta):
         abstract = True
         ordering = ['-rec_datetime','-file_datetime','index']
 
-class Block(NeoContainer):
+class Block(ContainerModel):
     """
 
     The top-level container gathering all of the data, discrete and
@@ -113,7 +95,7 @@ class Block(NeoContainer):
     pass
 
        
-class Segment(NeoContainer):
+class Segment(ContainerModel):
     """ Segment
 
     A container for heterogeneous discrete or continous data sharing a 
@@ -130,12 +112,12 @@ class Segment(NeoContainer):
     block = models.ForeignKey(Block,null=True,blank=True,db_index=True,related_name='segments')
 
 # Grouping Models
-class NeoGroup(NeoModel):
+class GroupModel(BaseModel):
     """ abstract base class for Neo Grouping Objects """
-    class Meta(NeoModel.Meta):
+    class Meta(BaseModel.Meta):
         abstract = True
 
-class RecordingChannelGroup(NeoGroup):
+class RecordingChannelGroup(GroupModel):
     """A group for associated RecordingChannel objects. 
 
     This has several possible uses:
@@ -165,7 +147,7 @@ class RecordingChannelGroup(NeoGroup):
         pass
 
 
-class RecordingChannel(NeoGroup):
+class RecordingChannel(GroupModel):
     """
 
     Links AnalogSignal, SpikeTrain objects that come from the same logical 
@@ -190,7 +172,7 @@ class RecordingChannel(NeoGroup):
         """
         return (self.x_coord, self.y_coord, self.z_coord)
 
-class Unit(NeoGroup):
+class Unit(GroupModel):
     """
 
     A Unit gathers all the SpikeTrain objects within a common Block, 
@@ -202,18 +184,18 @@ class Unit(NeoGroup):
     recording_channel_group = models.ManyToManyField('RecordingChannelGroup',related_name='units')
 
 # Data Models
-class NeoData(NeoModel):
+class DataModel(BaseModel):
     """ abstract base class for Neo Data """
 
     """ CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
-    This will cause problems if NeoData is inherited from any other apps, but will ensure that all 
-    NeoData objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
+    This will cause problems if DataModel is inherited from any other apps, but will ensure that all 
+    DataModel objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
     segment = models.ForeignKey(Segment,db_index=True,related_name="%(class)ss")
 
-    class Meta(NeoModel.Meta):
+    class Meta(BaseModel.Meta):
         abstract = True
 
-class AnalogSignal(NeoData):
+class AnalogSignal(DataModel):
     """A regular sampling of a continuous, analog signal."""
 
     t_start = models.FloatField(default=0.0)
@@ -248,7 +230,7 @@ class AnalogSignal(NeoData):
         return self.name
 
 
-class IrregularlySampledSignal(NeoData):
+class IrregularlySampledSignal(DataModel):
     """
     
     A representation of a continuous, analog signal acquired at time 
@@ -267,7 +249,7 @@ class IrregularlySampledSignal(NeoData):
         return str(len(self.times))
  
 
-class SpikeTrain(NeoData):
+class SpikeTrain(DataModel):
     """
 
     A set of action potentials (spikes) emitted by the same unit in a 
@@ -289,7 +271,7 @@ class SpikeTrain(NeoData):
         return str(len(self.times))
 
 
-class Event(NeoData):
+class Event(DataModel):
     """A time point representng an event in the data
 
     """
