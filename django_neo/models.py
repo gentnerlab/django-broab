@@ -181,7 +181,7 @@ class Unit(GroupModel):
 
     A Unit is linked to RecordingChannelGroup objects from which it was detected.
     """
-    recording_channel_group = models.ManyToManyField('RecordingChannelGroup',related_name='units')
+    recording_channel_group = models.ForeignKey('RecordingChannelGroup',null=True,blank=True)
 
 # Data Models
 class DataModel(BaseModel):
