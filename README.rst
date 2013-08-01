@@ -24,7 +24,7 @@ Key features
 Quick start (ha!)
 -----------
 
-1. install the dependencies
+1. install the dependencies::
 
 	  pip install -r requirements.txt
 
@@ -55,14 +55,12 @@ differences between mr_anderson and Neo.
    are more efficient for analysis, they make it more difficult to query within
    the array. (However, I've considered adding Array models as targets of 
    ForeignKeys from their respective data model to group Events & AnalogSignals)
-
 2. The exception to this is SpikeTrain, which is maintained while Spike is not.
    This is because it is rare that one wants to filter a query of Spikes in a 
    SpikeTrain according to some Spike-specific feature. Maintaining only 
    SpikeTrains in the database should be sufficient for the vast majority of 
    queries while also keeping the size of the SpikeTrain table down by an order 
    of magnitude.
-
 3. Epochs do not exist in django-mr-anderson. Rather, Events 
    have an optional "duration" field. This is consistent with proposed changes 
    to Neo. 
