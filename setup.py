@@ -13,7 +13,7 @@ setup(
         # 'djorm-ext-pgarray>=0.6',
         # 'django-model-utils',
         ],
-    packages=['django_neo'],
+    packages=['mr_anderson'],
     include_package_data=True,
     license='BSD License',
     description='A simple Django app to maintain objects from Python-Neo.',
