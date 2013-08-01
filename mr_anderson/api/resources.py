@@ -10,6 +10,24 @@ from mr_anderson.models import EventType
 from tastypie.serializers import Serializer
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 
+class BaseMeta(object):
+    filtering = {
+        'name': ALL,
+        'description': ALL,
+        'file_origin': ALL,
+        'annotations': ALL,
+    }
+    authentication = BasicAuthentication()
+    authorization = DjangoAuthorization()
+
+class LookupMeta(object):
+    filtering = {
+        'name': ALL,
+        'description': ALL,
+    }
+    authentication = BasicAuthentication()
+    authorization = DjangoAuthorization()
+
 class BlockResource(ModelResource):
     segments = fields.ToManyField('mr_anderson.api.resources.SegmentResource','Segments',
                                   null=True,blank=True,full=True)
@@ -17,16 +35,13 @@ class BlockResource(ModelResource):
                                                   'recording_channel_groups',
                                                   null=True,blank=True,full=True)
 
-    class Meta():
+    class Meta(BaseMeta):
         queryset = Block.objects.all()
         resource_name = 'block'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        filtering.update({
+            'segments': ALL_WITH_RELATIONS,
+            'recording_channel_groups': ALL_WITH_RELATIONS,
+        })
 
 
 class SegmentResource(ModelResource):
@@ -44,17 +59,16 @@ class SegmentResource(ModelResource):
                                 'events',
                                 null=True,blank=True)
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = Segment.objects.all()
         resource_name = 'segment'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'block': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+            'analogsignals': ALL_WITH_RELATIONS,
+            'irregularlysampledsignals': ALL_WITH_RELATIONS,
+            'spiketrains': ALL_WITH_RELATIONS,
+            'events': ALL_WITH_RELATIONS,
+        })
 
 class RecordingChannelGroupResource(ModelResource):
     recording_channels = fields.ToManyField('mr_anderson.api.resources.RecordingChannelResource',
@@ -64,16 +78,13 @@ class RecordingChannelGroupResource(ModelResource):
                                'units',
                                null=True,blank=True)
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = RecordingChannelGroup.objects.all()
         resource_name = 'recording_channel_group'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        filtering.update({
+            'recording_channels': ALL_WITH_RELATIONS,
+            'units': ALL_WITH_RELATIONS,
+        })
 
 class RecordingChannelResource(ModelResource):
     analog_signals = fields.ToManyField('mr_anderson.api.resources.AnalogSignalResource',
@@ -82,83 +93,60 @@ class RecordingChannelResource(ModelResource):
     recording_channel_groups = fields.ToManyField('mr_anderson.api.resources.RecordingChannelGroupResource',
                                                   'recording_channel_groups',
                                                   null=True,blank=True)
-    class Meta:
+    class Meta(BaseMeta):
         queryset = RecordingChannel.objects.all()
         resource_name = 'recording_channel'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
-            'block': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        filtering.update({
+            'analog_signals': ALL_WITH_RELATIONS,
+            'recording_channel_groups': ALL_WITH_RELATIONS,
+        })
 
 class UnitResource(ModelResource):
     recording_channel_group = fields.ToOneField('mr_anderson.api.resources.RecordingChannelGroupResource','recording_channel_groups')
     spike_trains = fields.ToManyField('mr_anderson.api.resources.SpikeTrainResource','spike_trains')
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = Unit.objects.all()
         resource_name = 'unit'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'spike_trains': ALL_WITH_RELATIONS,
             'recording_channel_group': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        })
 
 class AnalogSignalResource(ModelResource):
     segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
     recording_channel = fields.ToOneField('mr_anderson.api.resources.RecordingChannelResource','recording_channels')
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = AnalogSignal.objects.all()
         resource_name = 'analog_signal'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'segment': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+            'recording_channel': ALL_WITH_RELATIONS,
+        })
 
 class IrregularlySampledSignalResource(ModelResource):
     segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = IrregularlySampledSignal.objects.all()
         resource_name = 'irregularly_sampled_signal'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'segment': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        })
 
 class SpikeTrainResource(ModelResource):
     segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segment')
     unit = fields.ToOneField('mr_anderson.api.resources.UnitResource','units',
                              null=True,blank=True)
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = SpikeTrain.objects.all()
         resource_name = 'spike_train'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'segment': ALL_WITH_RELATIONS,
             'unit': ALL_WITH_RELATIONS
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        })
 
     def dehydrate_times(self,bundle):
         return ast.literal_eval(bundle.data['times'])
@@ -167,32 +155,21 @@ class SpikeTrainResource(ModelResource):
 class EventTypeResource(ModelResource):
     events = fields.ToManyField('mr_anderson.api.resources.EventResource','events')
 
-    class Meta:
+    class Meta(LookupMeta):
         queryset = EventType.objects.all()
         resource_name = 'event_type'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
-            'segment': ALL_WITH_RELATIONS,
+        filtering.update({
             'events': ALL_WITH_RELATIONS,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        })
 
 class EventResource(ModelResource):
     segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
     event_type = fields.ToOneField('mr_anderson.api.resources.EventTypeResource','event_types')
 
-    class Meta:
+    class Meta(BaseMeta):
         queryset = Event.objects.all()
         resource_name = 'event'
-        filtering = {
-            'name': ALL,
-            'description': ALL,
-            'file_origin': ALL,
+        filtering.update({
             'segment': ALL_WITH_RELATIONS,
             'event_type': ALL,
-        }
-        authentication = BasicAuthentication()
-        authorization = DjangoAuthorization()
+        })
