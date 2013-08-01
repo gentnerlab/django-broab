@@ -8,6 +8,7 @@ Key features
 -----------
 
 - takes advantage of Postgres' support for Arrays (e.g. for 
+<<<<<<< HEAD
   AnalogSignal.signal and SpikeTrain.waveforms)
 
 - takes advantage of Postgres' support for Hstore key-value pairs (for 
@@ -19,14 +20,32 @@ Key features
 
 - to maximize interoperability with Python, Matlab, & R, data is exposed 
   via a RESTful API 
+=======
+	AnalogSignal.signal and SpikeTrain.waveforms)
+
+- takes advantage of Postgres' support for Hstore key-value pairs (for 
+	annotations)
+
+- models can be inherited to let developers define custom data models 
+	with additional fields or relationships while still conforming to the 
+	Neo data model (for example, see github.com/gentnerlab/sturnus)
+
+- to maximize interoperability with Python, Matlab, & R, data is exposed 
+	via a RESTful API 
+>>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
 
 
 Quick start (ha!)
 -----------
 
+<<<<<<< HEAD
 1. install the dependencies::
 
 	  pip install -r requirements.txt
+=======
+1. install the dependencies
+	pip install -r requirements.txt
+>>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
 
 2. Add "mr_anderson" to your INSTALLED_APPS setting like this::
 
@@ -52,6 +71,7 @@ advantage of a relational database implementation of Neo, there are some key
 differences between mr_anderson and Neo.
 
 1. The "Array" form of most objects does not exist in MrAnderson. While arrays
+<<<<<<< HEAD
    are more efficient for analysis, they make it more difficult to query within
    the array. (However, I've considered adding Array models as targets of 
    ForeignKeys from their respective data model to group Events & AnalogSignals)
@@ -64,9 +84,29 @@ differences between mr_anderson and Neo.
 3. Epochs do not exist in django-mr-anderson. Rather, Events 
    have an optional "duration" field. This is consistent with proposed changes 
    to Neo. 
+=======
+	are more efficient for analysis, they make it more difficult to query within
+	the array. (However, I've considered adding Array models as targets of 
+	ForeignKeys from their respective data model to group Events & AnalogSignals)
+
+2. The exception to this is SpikeTrain, which is maintained while Spike is not.
+	This is because it is rare that one wants to filter a query of Spikes in a 
+	SpikeTrain according to some Spike-specific feature. Maintaining only 
+	SpikeTrains in the database should be sufficient for the vast majority of 
+	queries while also keeping the size of the SpikeTrain table down by an order 
+	of magnitude.
+
+3. Epochs do not exist in django-mr-anderson. Rather, Events 
+	have an optional "duration" field. This is consistent with proposed changes 
+	to Neo. 
+>>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
 
 Future goals
 -----------
 
 1. Write a neo.io.MrAndersonIO for a clean export/import to and from any Neo-supported 
+<<<<<<< HEAD
    file format
+=======
+	file format
+>>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
