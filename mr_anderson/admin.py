@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django import forms
-from django_neo.models import Block, Segment
-from django_neo.models import RecordingChannelGroup, RecordingChannel, Unit
-from django_neo.models import AnalogSignal, SpikeTrain, Event
-from django_neo.models import EventType
-from django_neo.models import Annotation
+from mr_anderson.models import Block, Segment
+from mr_anderson.models import RecordingChannelGroup, RecordingChannel, Unit
+from mr_anderson.models import AnalogSignal, SpikeTrain, Event
+from mr_anderson.models import EventType
+from mr_anderson.models import Annotation
 from djorm_pgarray.fields import ArrayFormField
 from genericadmin.admin import GenericAdminModelAdmin, GenericStackedInline
 
