@@ -8,7 +8,6 @@ Key features
 -----------
 
 - takes advantage of Postgres' support for Arrays (e.g. for 
-<<<<<<< HEAD
   AnalogSignal.signal and SpikeTrain.waveforms)
 
 - takes advantage of Postgres' support for Hstore key-value pairs (for 
@@ -20,20 +19,6 @@ Key features
 
 - to maximize interoperability with Python, Matlab, & R, data is exposed 
   via a RESTful API 
-=======
-	AnalogSignal.signal and SpikeTrain.waveforms)
-
-- takes advantage of Postgres' support for Hstore key-value pairs (for 
-	annotations)
-
-- models can be inherited to let developers define custom data models 
-	with additional fields or relationships while still conforming to the 
-	Neo data model (for example, see github.com/gentnerlab/sturnus)
-
-- to maximize interoperability with Python, Matlab, & R, data is exposed 
-	via a RESTful API 
->>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
-
 
 Quick start (ha!)
 -----------
@@ -42,10 +27,6 @@ Quick start (ha!)
 1. install the dependencies::
 
 	  pip install -r requirements.txt
-=======
-1. install the dependencies
-	pip install -r requirements.txt
->>>>>>> 5e2a218e37de1accaa946895f8e111828e1355fb
 
 2. Add "mr_anderson" to your INSTALLED_APPS setting like this::
 
