@@ -20,21 +20,42 @@ Key features
 - to maximize interoperability with Python, Matlab, & R, data is exposed 
   via a RESTful API 
 
-Quick start (ha!)
+"Quick" start
 -----------
 
-1. install the dependencies::
+0. If you aren't already running a postgres backend...
 
-	  pip install -r requirements.txt
+   a. Create a new database, then install the hstore extension::
 
-2. Add "mr_anderson" to your INSTALLED_APPS setting like this::
+        CREATE EXTENSION hstore;
+
+   b. Install psycopg2 to interface with your Postgres database::
+
+        pip install psycopg2
+
+   c. Configure your Postgres database in settings.py::
+
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+                ...
+                }
+            }
+
+1. Install the dependencies::
+
+    pip install django-model-utils
+    pip install djorm-ext-pgarray
+    pip install djorm-ext-hstore
+
+4. Add "mr_anderson" to your INSTALLED_APPS setting like this::
 
       INSTALLED_APPS = (
           ...
           'mr_anderson',
       )
 
-2. Run `python manage.py syncdb` to create the models.
+5. Run `python manage.py syncdb` to create the models.
 
 3. Start the development server and visit http://127.0.0.1:8000/admin/
    to create mr_anderson objects (you'll need the Admin app enabled).
