@@ -4,13 +4,7 @@ from mr_anderson.models import Block, Segment
 from mr_anderson.models import RecordingChannelGroup, RecordingChannel, Unit
 from mr_anderson.models import AnalogSignal, SpikeTrain, Event
 from mr_anderson.models import EventType
-from mr_anderson.models import Annotation
 from djorm_pgarray.fields import ArrayFormField
-from genericadmin.admin import GenericAdminModelAdmin, GenericStackedInline
-
-class AnnotationInline(GenericStackedInline):
-    model = Annotation
-    extra = 0
 
 class SegmentInline(admin.StackedInline):
     model = Segment
@@ -22,11 +16,10 @@ class RecordingChannelGroupInline(admin.StackedInline):
     max_num = 10
     extra = 0
 
-class BlockAdmin(GenericAdminModelAdmin):
+class BlockAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
     inlines = [SegmentInline,
                RecordingChannelGroupInline,
-               AnnotationInline,
                ]
 admin.site.register(Block,BlockAdmin)
 
@@ -47,7 +40,6 @@ class SegmentAdmin(admin.ModelAdmin):
     inlines = [EventInline,
                SpikeTrainInline,
                AnalogSignalInline,
-               AnnotationInline,
                ]
 admin.site.register(Segment,SegmentAdmin)
 
