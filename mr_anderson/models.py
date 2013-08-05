@@ -42,7 +42,7 @@ class BaseModel(models.Model):
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True)
-    annotations = DictionaryField(db_index=True,blank=True)
+    annotations = DictionaryField(blank=True)
 
     # created = models.DateTimeField(auto_now_add=True)
     # modified = models.DateTimeField(auto_now=True)
