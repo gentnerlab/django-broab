@@ -42,7 +42,10 @@ class BaseModel(models.Model):
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True)
-    annotations = DictionaryField(db_index=True)
+    annotations = DictionaryField(db_index=True,blank=True)
+
+    # created = models.DateTimeField(auto_now_add=True)
+    # modified = models.DateTimeField(auto_now=True)
 
     objects = HStoreManager() 
     inherited_objects = InheritanceManager()
@@ -163,14 +166,6 @@ class RecordingChannel(GroupModel):
 
 
     coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES,blank=True)
-
-    def coordinate(self): 
-        """ 
-
-        TODO: might be better to define coordinate as a postgres array?
-
-        """
-        return (self.x_coord, self.y_coord, self.z_coord)
 
 class Unit(GroupModel):
     """
