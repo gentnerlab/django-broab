@@ -44,6 +44,9 @@ class BlockAdmin(admin.ModelAdmin):
         ('File information', {
             'fields': ('file_origin','file_datetime'),
          }),
+        ('History', {
+            'fields': (('created','modified'),),
+         }),
         )
     inlines = [
         RecordingChannelGroupInline,
@@ -53,11 +56,12 @@ class BlockAdmin(admin.ModelAdmin):
         'description',
         'annotations',
         ]
-    # readonly_fields = ('created','modified')
+    readonly_fields = ('created','modified')
 admin.site.register(Block,BlockAdmin)
 
 class SegmentAdmin(admin.ModelAdmin):
     list_display = ('name','index','rec_datetime')
+    list_filter = ('block','events__label')
     fieldsets = (
         (None, {
             'fields': ('block','index', 'rec_datetime',),
@@ -67,6 +71,9 @@ class SegmentAdmin(admin.ModelAdmin):
          }),
         ('File information', {
             'fields': ('file_origin','file_datetime'),
+         }),
+        ('History', {
+            'fields': (('created','modified'),),
          }),
         )
     inlines = [
@@ -83,11 +90,18 @@ class SegmentAdmin(admin.ModelAdmin):
         'block__description',
         'block__annotations',
         'block__file_origin',
+        'events__name',
+        'events__description',
+        'events__annotations',
+        'events__label__name',
+        'events__label__description',
         ]
+    readonly_fields = ('created','modified')
 admin.site.register(Segment,SegmentAdmin)
 
 class RecordingChannelGroupAdmin(admin.ModelAdmin):
     list_display = ('pk','name','block',)
+    list_filter = ('block',)
     fieldsets = (
         (None, {
             'fields': ('block','recording_channels'),
@@ -97,6 +111,9 @@ class RecordingChannelGroupAdmin(admin.ModelAdmin):
          }),
         ('File information', {
             'fields': ('file_origin',),
+         }),
+        ('History', {
+            'fields': (('created','modified'),),
          }),
         )
     filter_horizontal = ['recording_channels']
@@ -110,10 +127,12 @@ class RecordingChannelGroupAdmin(admin.ModelAdmin):
         'block__annotations',
         'block__file_origin',
         ]
+    readonly_fields = ('created','modified')
 admin.site.register(RecordingChannelGroup,RecordingChannelGroupAdmin)
 
 class RecordingChannelAdmin(admin.ModelAdmin):
     list_display = ('index','x_coord','y_coord','z_coord','coord_units')
+    list_filter = ('recording_channel_groups__block','recording_channel_groups',)
     fieldsets = (
         (None, {
             'fields': ('index',('x_coord','y_coord','z_coord'),'coord_units'),
@@ -124,6 +143,9 @@ class RecordingChannelAdmin(admin.ModelAdmin):
         ('File information', {
             'fields': ('file_origin',),
          }),
+        ('History', {
+            'fields': (('created','modified'),),
+         }),
         )
     search_fields = [
         'name',
@@ -131,10 +153,12 @@ class RecordingChannelAdmin(admin.ModelAdmin):
         'annotations',
         'file_origin',
         ]
+    readonly_fields = ('created','modified')
     # inlines = [AnalogSignalInline,]
 admin.site.register(RecordingChannel,RecordingChannelAdmin)
 
 class UnitAdmin(admin.ModelAdmin):
+    list_filter = ('recording_channel_group__block',)
     fieldsets = (
         (None, {
             'fields': ('recording_channel_group',),
@@ -144,6 +168,9 @@ class UnitAdmin(admin.ModelAdmin):
          }),
         ('File information', {
             'fields': ('file_origin',),
+         }),
+        ('History', {
+            'fields': (('created','modified'),),
          }),
         )
     search_fields = [
@@ -161,9 +188,16 @@ class UnitAdmin(admin.ModelAdmin):
         'recording_channel_group__block__file_origin',
         ]
     # inlines = [SpikeTrainInline,]
+    readonly_fields = ('created','modified')
 admin.site.register(Unit,UnitAdmin)
 
 class AnalogSignalAdmin(admin.ModelAdmin):
+    list_filter = (
+        'segment__block',
+        'recording_channel__recording_channel_groups',
+        'recording_channel',
+        'segment',
+        )
 
     list_display = ('t_start','segment','recording_channel')
     fieldsets = (
@@ -181,6 +215,9 @@ class AnalogSignalAdmin(admin.ModelAdmin):
         ('File information', {
             'fields': ('file_origin',),
          }),
+        ('History', {
+            'fields': (('created','modified'),),
+         }),
         )
     search_fields = [
         'name',
@@ -196,16 +233,24 @@ class AnalogSignalAdmin(admin.ModelAdmin):
         'segment__block__annotations',
         'segment__block__file_origin',
         ]
+    readonly_fields = ('created','modified')
 
 admin.site.register(AnalogSignal,AnalogSignalAdmin)
 
 class SpikeTrainAdmin(admin.ModelAdmin):
-    readonly_fields = ('n_spikes',)
+    list_filter = (
+        'segment__block',
+        'segment',
+        'segment__events',
+        'segment__events__name',
+        'segment__events__label',
+        'unit',
+        )
 
-    list_display = ('n_spikes','segment',)
+    list_display = ('spike_times','segment',)
     fieldsets = (
         (None, {
-            'fields': ('n_spikes','segment',('t_start','t_stop')),
+            'fields': ('spike_times','unit','segment',('t_start','t_stop')),
          }),
         ('Meta', {
             'fields': ('name', 'description', 'annotations'),
@@ -213,6 +258,9 @@ class SpikeTrainAdmin(admin.ModelAdmin):
         ('File information', {
             'fields': ('file_origin',),
          }),
+        ('History', {
+            'fields': (('created','modified'),),
+         }),
         )
     search_fields = [
         'name',
@@ -228,15 +276,21 @@ class SpikeTrainAdmin(admin.ModelAdmin):
         'segment__block__annotations',
         'segment__block__file_origin',
         ]
+    readonly_fields = ('spike_times','created','modified')
 
-    def n_spikes(self,instance):
-        return str(len(instance.times))
+    def spike_times(self,instance):
+        return str(instance.times)[:30]
 
 admin.site.register(SpikeTrain,SpikeTrainAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
     list_display = ('time','duration','label','segment')
+    list_filter = (
+        'segment__block',
+        'segment',
+        'label',
+        )
     fieldsets = (
         (None, {
             'fields': (('label','segment'),('time','duration')),
@@ -246,6 +300,9 @@ class EventAdmin(admin.ModelAdmin):
          }),
         ('File information', {
             'fields': ('file_origin',),
+         }),
+        ('History', {
+            'fields': (('created','modified'),),
          }),
         )
     search_fields = [
@@ -264,6 +321,7 @@ class EventAdmin(admin.ModelAdmin):
         'label__name',
         'label__description',
         ]
+    readonly_fields = ('created','modified')
 admin.site.register(Event,EventAdmin)
 
 admin.site.register(EventType)
