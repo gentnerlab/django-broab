@@ -44,8 +44,8 @@ class BaseModel(models.Model):
     file_origin = models.CharField(max_length=255,blank=True)
     annotations = DictionaryField(blank=True)
 
-    # created = models.DateTimeField(auto_now_add=True)
-    # modified = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     objects = HStoreManager() 
     inherited_objects = InheritanceManager()
@@ -112,7 +112,7 @@ class Segment(ContainerModel):
 
     """
 
-    block = models.ForeignKey(Block,null=True,blank=True,db_index=True,related_name='segments')
+    block = models.ForeignKey(Block,null=True,blank=True,related_name='segments')
 
 # Grouping Models
 class GroupModel(BaseModel):
@@ -185,7 +185,7 @@ class DataModel(BaseModel):
     """ CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
     This will cause problems if DataModel is inherited from any other apps, but will ensure that all 
     DataModel objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
-    segment = models.ForeignKey(Segment,db_index=True,related_name="%(class)ss")
+    segment = models.ForeignKey(Segment,related_name="%(class)ss")
 
     class Meta(BaseModel.Meta):
         abstract = True
@@ -243,7 +243,6 @@ class IrregularlySampledSignal(DataModel):
     def __unicode__(self):
         return str(len(self.times))
  
-
 class SpikeTrain(DataModel):
     """
 
@@ -256,14 +255,22 @@ class SpikeTrain(DataModel):
     t_stop = models.FloatField()
     t_units = models.CharField(max_length=255,choices=TIME_CHOICES,blank=True)
 
-    waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
-    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES,blank=True)
-    sampling_rate = models.FloatField(null=True,blank=True)
-    left_sweep = models.FloatField(null=True,blank=True)
-    sort = models.BooleanField(default=False)
+    unit = models.ForeignKey(Unit,null=True,related_name='spike_trains')
 
     def __unicode__(self):
-        return str(len(self.times))
+        return str(self.times)
+
+class SpikeTrainFull(SpikeTrain):
+    """
+    the optional waveforms
+    """
+
+    waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
+    waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
+    sampling_rate = models.FloatField()
+    left_sweep = models.FloatField()
+    sort = models.BooleanField(default=False)
+
 
 
 class Event(DataModel):
@@ -271,8 +278,8 @@ class Event(DataModel):
 
     """
     time = models.FloatField()
-    label = models.ForeignKey(EventType,db_index=True)
+    label = models.ForeignKey(EventType)
     duration = models.FloatField(null=True,blank=True)
 
     def __unicode__(self):
-        return "%s:%s" % (self.label,self.time)    
+        return "%s" % (self.time)    
