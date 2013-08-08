@@ -4,7 +4,7 @@ from neo import core
 from pytz import timezone
 from django.utils import timezone as tz
 from django.core.management.base import BaseCommand, CommandError
-from mr_anderson import models
+from broab import models
 
 
 def clean_annotations(annotations):

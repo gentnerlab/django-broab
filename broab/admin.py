@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django import forms
-from mr_anderson.models import Block, Segment
-from mr_anderson.models import RecordingChannelGroup, RecordingChannel, Unit
-from mr_anderson.models import AnalogSignal, SpikeTrain, Event
-from mr_anderson.models import EventType
+from broab.models import Block, Segment
+from broab.models import RecordingChannelGroup, RecordingChannel, Unit
+from broab.models import AnalogSignal, SpikeTrain, Event
+from broab.models import EventType
 from djorm_pgarray.fields import ArrayFormField
 
 SEARCH_FIELDS = ['name','description','annotations']

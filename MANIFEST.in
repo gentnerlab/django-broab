@@ -1,5 +1,5 @@
 include LICENSE
 include README.rst
-recursive-include django_neo/static *
-recursive-include django_neo/templates *
+recursive-include broab/static *
+recursive-include broab/templates *
 recursive-include docs *

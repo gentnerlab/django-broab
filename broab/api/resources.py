@@ -3,10 +3,10 @@ from tastypie import fields
 from tastypie.resources import ModelResource
 from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import DjangoAuthorization
-from mr_anderson.models import Block, Segment
-from mr_anderson.models import RecordingChannelGroup, RecordingChannel, Unit
-from mr_anderson.models import AnalogSignal, IrregularlySampledSignal, SpikeTrain, Event
-from mr_anderson.models import EventType
+from broab.models import Block, Segment
+from broab.models import RecordingChannelGroup, RecordingChannel, Unit
+from broab.models import AnalogSignal, IrregularlySampledSignal, SpikeTrain, Event
+from broab.models import EventType
 from tastypie.serializers import Serializer
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 
@@ -29,9 +29,9 @@ class LookupMeta(object):
     authorization = DjangoAuthorization()
 
 class BlockResource(ModelResource):
-    segments = fields.ToManyField('mr_anderson.api.resources.SegmentResource','Segments',
+    segments = fields.ToManyField('broab.api.resources.SegmentResource','Segments',
                                   null=True,blank=True,full=True)
-    recording_channel_groups = fields.ToManyField('mr_anderson.api.resources.RecordingChannelGroupResource',
+    recording_channel_groups = fields.ToManyField('broab.api.resources.RecordingChannelGroupResource',
                                                   'recording_channel_groups',
                                                   null=True,blank=True,full=True)
 
@@ -47,15 +47,15 @@ class BlockResource(ModelResource):
 class SegmentResource(ModelResource):
     block = fields.ToOneField(BlockResource,'block',
                               null=True,blank=True)
-    analogsignals = fields.ToManyField('mr_anderson.api.resources.AnalogSignalResource','analogsignals',
+    analogsignals = fields.ToManyField('broab.api.resources.AnalogSignalResource','analogsignals',
                                         null=True,blank=True)
-    irregularlysampledsignals = fields.ToManyField('mr_anderson.api.resources.IrregularlySampledSignalResource',
+    irregularlysampledsignals = fields.ToManyField('broab.api.resources.IrregularlySampledSignalResource',
                                                      'irregularlysampledsignals',
                                                      null=True,blank=True)
-    spiketrains = fields.ToManyField('mr_anderson.api.resources.SpikeTrainResource',
+    spiketrains = fields.ToManyField('broab.api.resources.SpikeTrainResource',
                                       'spiketrains',
                                       null=True,blank=True)
-    events = fields.ToManyField('mr_anderson.api.resources.EventResource',
+    events = fields.ToManyField('broab.api.resources.EventResource',
                                 'events',
                                 null=True,blank=True)
 
@@ -71,10 +71,10 @@ class SegmentResource(ModelResource):
         })
 
 class RecordingChannelGroupResource(ModelResource):
-    recording_channels = fields.ToManyField('mr_anderson.api.resources.RecordingChannelResource',
+    recording_channels = fields.ToManyField('broab.api.resources.RecordingChannelResource',
                                             'recording_channels',
                                             null=True,blank=True,full=True)
-    units = fields.ToManyField('mr_anderson.api.resources.UnitResource',
+    units = fields.ToManyField('broab.api.resources.UnitResource',
                                'units',
                                null=True,blank=True)
 
@@ -87,10 +87,10 @@ class RecordingChannelGroupResource(ModelResource):
         })
 
 class RecordingChannelResource(ModelResource):
-    analog_signals = fields.ToManyField('mr_anderson.api.resources.AnalogSignalResource',
+    analog_signals = fields.ToManyField('broab.api.resources.AnalogSignalResource',
                                         'analog_signals',
                                         null=True,blank=True)
-    recording_channel_groups = fields.ToManyField('mr_anderson.api.resources.RecordingChannelGroupResource',
+    recording_channel_groups = fields.ToManyField('broab.api.resources.RecordingChannelGroupResource',
                                                   'recording_channel_groups',
                                                   null=True,blank=True)
     class Meta(BaseMeta):
@@ -102,8 +102,8 @@ class RecordingChannelResource(ModelResource):
         })
 
 class UnitResource(ModelResource):
-    recording_channel_group = fields.ToOneField('mr_anderson.api.resources.RecordingChannelGroupResource','recording_channel_groups')
-    spike_trains = fields.ToManyField('mr_anderson.api.resources.SpikeTrainResource','spike_trains')
+    recording_channel_group = fields.ToOneField('broab.api.resources.RecordingChannelGroupResource','recording_channel_groups')
+    spike_trains = fields.ToManyField('broab.api.resources.SpikeTrainResource','spike_trains')
 
     class Meta(BaseMeta):
         queryset = Unit.objects.all()
@@ -114,8 +114,8 @@ class UnitResource(ModelResource):
         })
 
 class AnalogSignalResource(ModelResource):
-    segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
-    recording_channel = fields.ToOneField('mr_anderson.api.resources.RecordingChannelResource','recording_channels')
+    segment = fields.ToOneField('broab.api.resources.SegmentResource','segments')
+    recording_channel = fields.ToOneField('broab.api.resources.RecordingChannelResource','recording_channels')
 
     class Meta(BaseMeta):
         queryset = AnalogSignal.objects.all()
@@ -126,7 +126,7 @@ class AnalogSignalResource(ModelResource):
         })
 
 class IrregularlySampledSignalResource(ModelResource):
-    segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
+    segment = fields.ToOneField('broab.api.resources.SegmentResource','segments')
 
     class Meta(BaseMeta):
         queryset = IrregularlySampledSignal.objects.all()
@@ -136,8 +136,8 @@ class IrregularlySampledSignalResource(ModelResource):
         })
 
 class SpikeTrainResource(ModelResource):
-    segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segment')
-    unit = fields.ToOneField('mr_anderson.api.resources.UnitResource','units',
+    segment = fields.ToOneField('broab.api.resources.SegmentResource','segment')
+    unit = fields.ToOneField('broab.api.resources.UnitResource','units',
                              null=True,blank=True)
 
     class Meta(BaseMeta):
@@ -153,7 +153,7 @@ class SpikeTrainResource(ModelResource):
         
 
 class EventTypeResource(ModelResource):
-    events = fields.ToManyField('mr_anderson.api.resources.EventResource','events')
+    events = fields.ToManyField('broab.api.resources.EventResource','events')
 
     class Meta(LookupMeta):
         queryset = EventType.objects.all()
@@ -163,8 +163,8 @@ class EventTypeResource(ModelResource):
         })
 
 class EventResource(ModelResource):
-    segment = fields.ToOneField('mr_anderson.api.resources.SegmentResource','segments')
-    event_type = fields.ToOneField('mr_anderson.api.resources.EventTypeResource','event_types')
+    segment = fields.ToOneField('broab.api.resources.SegmentResource','segments')
+    event_type = fields.ToOneField('broab.api.resources.EventTypeResource','event_types')
 
     class Meta(BaseMeta):
         queryset = Event.objects.all()

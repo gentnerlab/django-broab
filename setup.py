@@ -7,13 +7,13 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='django-mr-anderson',
+    name='django-broab',
     version='0.1',
     requires=[
         # 'djorm-ext-pgarray>=0.6',
         # 'django-model-utils',
         ],
-    packages=['mr_anderson'],
+    packages=['broab'],
     include_package_data=True,
     license='BSD License',
     description='A simple Django app to maintain objects from Python-Neo.',

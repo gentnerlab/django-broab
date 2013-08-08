@@ -1,4 +1,4 @@
-django-mr-anderson
+django-broab
 ==========
 
 Django package that implements the a set of models and an API for
@@ -48,19 +48,19 @@ Key features
     pip install djorm-ext-pgarray
     pip install djorm-ext-hstore
 
-4. Add "mr_anderson" to your INSTALLED_APPS setting like this::
+4. Add "broab" to your INSTALLED_APPS setting like this::
 
       INSTALLED_APPS = (
           ...
-          'mr_anderson',
+          'broab',
       )
 
 5. Run `python manage.py syncdb` to create the models.
 
 3. Start the development server and visit http://127.0.0.1:8000/admin/
-   to create mr_anderson objects (you'll need the Admin app enabled).
+   to create broab objects (you'll need the Admin app enabled).
 
-4. Visit http://127.0.0.1:8000/admin/mr_anderson/ to view objects available.
+4. Visit http://127.0.0.1:8000/admin/broab/ to view objects available.
 
 Notable deviations from Neo
 -----------
@@ -69,9 +69,9 @@ A number of data models in Neo are simply "array" versions of unidimensional
 data structures, e.g. AnalogSignal/AnalogSignalArray, Spike/SpikeTrain, 
 Event/EventArray, Epoch/EpochArray. In order to simplify the schema and take
 advantage of a relational database implementation of Neo, there are some key 
-differences between mr_anderson and Neo.
+differences between broab and Neo.
 
-1. The "Array" form of most objects does not exist in MrAnderson. While arrays
+1. The "Array" form of most objects does not exist in Broab. While arrays
    are more efficient for analysis, they make it more difficult to query within
    the array. (However, I've considered adding Array models as targets of 
    ForeignKeys from their respective data model to group Events & AnalogSignals)
@@ -81,12 +81,12 @@ differences between mr_anderson and Neo.
    SpikeTrains in the database should be sufficient for the vast majority of 
    queries while also keeping the size of the SpikeTrain table down by an order 
    of magnitude.
-3. Epochs do not exist in django-mr-anderson. Rather, Events 
+3. Epochs do not exist in Broab. Rather, Events 
    have an optional "duration" field. This is consistent with proposed changes 
    to Neo. 
 
 Future goals
 -----------
 
-1. Write a neo.io.MrAndersonIO for a clean export/import to and from any Neo-supported 
+1. Write a neo.io.BroabIO for a clean export/import to and from any Neo-supported 
    file format
