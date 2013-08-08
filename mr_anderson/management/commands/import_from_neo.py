@@ -168,8 +168,32 @@ def create_analog_signal(neo_analog_signal,segment,recording_channel=None):
         analog_signal.recording_channel = recording_channel
     return analog_signal
 
-def create_spike_train(neo_spike_train,segment,unit=None):
-    spike_train = models.SpikeTrain()
+def create_spike_train(neo_spike_train,segment_id,unit_id=None):
+    spike_train = models.SpikeTrain()   
+    if neo_spike_train.name is not None:
+        spike_train.name = neo_spike_train.name
+    if neo_spike_train.description is not None:
+        spike_train.description = neo_spike_train.description
+    if neo_spike_train.file_origin is not None:
+        spike_train.file_origin = neo_spike_train.file_origin
+    spike_train.annotations = clean_annotations(neo_spike_train.annotations)
+
+    t_units = 's'
+    times = neo_spike_train.times.rescale(t_units)
+    spike_train.times = [float(t) for t in times]
+    spike_train.t_start = float(neo_spike_train.t_start.rescale(t_units))
+    spike_train.t_stop = float(neo_spike_train.t_stop.rescale(t_units))
+    spike_train.t_units = t_units
+
+
+    spike_train.segment_id = segment_id
+    if unit_id is not None:
+        spike_train.unit_id = unit_id
+
+    return spike_train
+
+def create_spike_train_full(neo_spike_train,segment_id,unit_id=None):
+    spike_train = models.SpikeTrainFull()
     if neo_spike_train.name is not None:
         spike_train.name = neo_spike_train.name
     if neo_spike_train.description is not None:
@@ -195,10 +219,12 @@ def create_spike_train(neo_spike_train,segment,unit=None):
 
     spike_train.left_sweep = neo_spike_train.left_sweep
     spike_train.sampling_rate = neo_spike_train.sampling_rate
+    if neo_spike_train.sort is not None:
+        spike_train.sort = neo_spike_train.sort
 
-    spike_train.segment = segment
-    if unit is not None:
-        spike_train.unit = unit
+    spike_train.segment_id = segment_id
+    if unit_id is not None:
+        spike_train.unit_id = unit_id
 
     return spike_train
 
@@ -220,6 +246,9 @@ class Command(BaseCommand):
                     block.save()
                     bl.annotate(django_pk=block.pk)
                     self.stdout.write('Successfully saved block "%s"(pk=%s)' % (block,block.pk))
+
+                    spike_train_set = []
+                    spike_train_full_set = []
 
                     # recording channel groups
                     if core.recordingchannelgroup.RecordingChannelGroup in reader.readable_objects:
@@ -289,12 +318,14 @@ class Command(BaseCommand):
                             if core.spiketrain.SpikeTrain in reader.readable_objects:
                                 for sptr in seg.spiketrains:
                                     u = sptr.unit
-                                    pk = u.annotations['django_pk']
-                                    unit = models.Unit.objects.get(pk=pk)
-                                    spike_train = create_spike_train(sptr,segment,unit)
-                                    spike_train.save()
-                                    sptr.annotate(django_pk=spike_train.pk)
-                                    self.stdout.write('Successfully saved spike train "%s"(pk=%s)' % (spike_train,spike_train.pk))
+                                    unit_id = u.annotations['django_pk']
+                                    if sptr.waveforms is not None:
+                                        spike_train = create_spike_train_full(sptr,segment.pk,unit_id)
+                                        spike_train_full_set.append(spike_train)
+                                    else:
+                                        spike_train = create_spike_train(sptr,segment.pk,unit_id)
+                                        spike_train_set.append(spike_train)
+                                    
 
                             # # analog signals
                             # for ansig in seg.analog_signals:
@@ -302,3 +333,13 @@ class Command(BaseCommand):
 
                             # for ansig_array in seg.analogsignalarrays:
                             #     analog_signal_list = create_analog_signal_from_array(ansig_array,segment)
+
+                    if len(spike_train_set) > 0:
+                        self.stdout.write('Creating %s SpikeTrain instances in bulk...' % (len(spike_train_set),))
+                        models.SpikeTrain.objects.bulk_create(spike_train_set)
+                        self.stdout.write('Success!')
+
+                    if len(spike_train_full_set) > 0:
+                        self.stdout.write('Creating %s SpikeTrainFull instances in bulk...' % (len(spike_train_full_set),))
+                        models.SpikeTrainFull.objects.bulk_create(spike_train_full_set)
+                        self.stdout.write('Success!')

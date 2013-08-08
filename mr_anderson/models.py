@@ -258,7 +258,7 @@ class SpikeTrain(DataModel):
     unit = models.ForeignKey(Unit,null=True,related_name='spike_trains')
 
     def __unicode__(self):
-        return str(self.times)
+        return str(len(self.times))
 
 class SpikeTrainFull(SpikeTrain):
     """
@@ -267,8 +267,8 @@ class SpikeTrainFull(SpikeTrain):
 
     waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
-    sampling_rate = models.FloatField()
-    left_sweep = models.FloatField()
+    sampling_rate = models.FloatField(null=True,blank=True)
+    left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
 
 

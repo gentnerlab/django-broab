@@ -279,7 +279,7 @@ class SpikeTrainAdmin(admin.ModelAdmin):
     readonly_fields = ('spike_times','created','modified')
 
     def spike_times(self,instance):
-        return str(instance.times)[:30]
+        return ','.join([("%0.2f" % t) for t in instance.times]).join(['[',']'])[:64]
 
 admin.site.register(SpikeTrain,SpikeTrainAdmin)
 
