@@ -325,7 +325,20 @@ class Command(BaseCommand):
                                     else:
                                         spike_train = create_spike_train(sptr,segment.pk,unit_id)
                                         spike_train_set.append(spike_train)
+
                                     
+                                if len(spike_train_set) > 999:
+                                    self.stdout.write('Creating %s SpikeTrain instances in bulk...' % (len(spike_train_set),))
+                                    models.SpikeTrain.objects.bulk_create(spike_train_set)
+                                    self.stdout.write('Success!')
+                                    spike_train_set = []
+
+
+                                if len(spike_train_full_set) > 999:
+                                    self.stdout.write('Creating %s SpikeTrainFull instances in bulk...' % (len(spike_train_full_set),))
+                                    models.SpikeTrainFull.objects.bulk_create(spike_train_full_set)
+                                    self.stdout.write('Success!')
+                                    spike_train_full_set = []
 
                             # # analog signals
                             # for ansig in seg.analog_signals:
@@ -333,13 +346,3 @@ class Command(BaseCommand):
 
                             # for ansig_array in seg.analogsignalarrays:
                             #     analog_signal_list = create_analog_signal_from_array(ansig_array,segment)
-
-                    if len(spike_train_set) > 0:
-                        self.stdout.write('Creating %s SpikeTrain instances in bulk...' % (len(spike_train_set),))
-                        models.SpikeTrain.objects.bulk_create(spike_train_set)
-                        self.stdout.write('Success!')
-
-                    if len(spike_train_full_set) > 0:
-                        self.stdout.write('Creating %s SpikeTrainFull instances in bulk...' % (len(spike_train_full_set),))
-                        models.SpikeTrainFull.objects.bulk_create(spike_train_full_set)
-                        self.stdout.write('Success!')
