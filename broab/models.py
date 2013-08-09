@@ -178,6 +178,9 @@ class Unit(GroupModel):
     """
     recording_channel_group = models.ForeignKey('RecordingChannelGroup',null=True,blank=True)
 
+    def __unicode__(self):
+        return '%s(%s)' % (self.name,self.recording_channel_group)
+
 # Data Models
 class DataModel(BaseModel):
     """ abstract base class for Neo Data """
