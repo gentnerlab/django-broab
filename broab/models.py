@@ -255,7 +255,7 @@ class SpikeTrain(DataModel):
     t_stop = models.FloatField()
     t_units = models.CharField(max_length=255,choices=TIME_CHOICES,blank=True)
 
-    unit = models.ForeignKey(Unit,null=True,related_name='spike_trains')
+    unit = models.ForeignKey(Unit,null=True,blank=True,related_name='spike_trains')
 
     def __unicode__(self):
         return str(len(self.times))
