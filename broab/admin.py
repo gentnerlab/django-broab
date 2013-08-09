@@ -159,6 +159,7 @@ admin.site.register(RecordingChannel,RecordingChannelAdmin)
 
 class UnitAdmin(admin.ModelAdmin):
     list_filter = ('recording_channel_group__block',)
+    list_display = ('recording_channel_group','name')
     fieldsets = (
         (None, {
             'fields': ('recording_channel_group',),
