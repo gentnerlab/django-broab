@@ -322,23 +322,25 @@ class Command(BaseCommand):
                                     if sptr.waveforms is not None:
                                         spike_train = create_spike_train_full(sptr,segment.pk,unit_id)
                                         spike_train_full_set.append(spike_train)
+                                        spike_train_full_set.save()
                                     else:
                                         spike_train = create_spike_train(sptr,segment.pk,unit_id)
                                         spike_train_set.append(spike_train)
+                                        spike_train_set.save()
 
                                     
-                                if len(spike_train_set) > 999:
-                                    self.stdout.write('Creating %s SpikeTrain instances in bulk...' % (len(spike_train_set),))
-                                    models.SpikeTrain.objects.bulk_create(spike_train_set)
-                                    self.stdout.write('Success!')
-                                    spike_train_set = []
+                                # if len(spike_train_set) > 999:
+                                #     self.stdout.write('Creating %s SpikeTrain instances in bulk...' % (len(spike_train_set),))
+                                #     models.SpikeTrain.objects.bulk_create(spike_train_set)
+                                #     self.stdout.write('Success!')
+                                #     spike_train_set = []
 
 
-                                if len(spike_train_full_set) > 999:
-                                    self.stdout.write('Creating %s SpikeTrainFull instances in bulk...' % (len(spike_train_full_set),))
-                                    models.SpikeTrainFull.objects.bulk_create(spike_train_full_set)
-                                    self.stdout.write('Success!')
-                                    spike_train_full_set = []
+                                # if len(spike_train_full_set) > 999:
+                                #     self.stdout.write('Creating %s SpikeTrainFull instances in bulk...' % (len(spike_train_full_set),))
+                                #     models.SpikeTrainFull.objects.bulk_create(spike_train_full_set)
+                                #     self.stdout.write('Success!')
+                                #     spike_train_full_set = []
 
                             # # analog signals
                             # for ansig in seg.analog_signals:
