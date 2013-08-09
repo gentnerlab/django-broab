@@ -208,14 +208,14 @@ class SpikeTrainResource(BroabResource):
         )
     unit = fields.ToOneField(
         'broab.api.resources.UnitResource',
-        'units',
+        'unit',
         null=True,
         blank=True
         )
 
     class Meta(BroabResource.Meta):
         queryset = SpikeTrain.objects.all()
-        resource_name = 'spike_train'
+        resource_name = 'spiketrain'
         filtering = BROAB_FILTERING
         filtering.update({
             'segment': ALL_WITH_RELATIONS,
