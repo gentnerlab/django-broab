@@ -321,12 +321,10 @@ class Command(BaseCommand):
                                     unit_id = u.annotations['django_pk']
                                     if sptr.waveforms is not None:
                                         spike_train = create_spike_train_full(sptr,segment.pk,unit_id)
-                                        spike_train_full_set.append(spike_train)
-                                        spike_train_full_set.save()
+                                        spike_train.save()
                                     else:
                                         spike_train = create_spike_train(sptr,segment.pk,unit_id)
-                                        spike_train_set.append(spike_train)
-                                        spike_train_set.save()
+                                        spike_train.save()
 
                                     
                                 # if len(spike_train_set) > 999:
