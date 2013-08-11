@@ -26,9 +26,14 @@ BROAB_FILTERING = {
     }
 
 class BroabResource(ModelResource):
+
+    annotations = fields.DictField(attribute='annotations')
     class Meta():
         authentication = BasicAuthentication()
         authorization = DjangoAuthorization()
+
+    # def dehydrate_annotations(self,bundle):
+    #     return ast.literal_eval(bundle.data['annotations'])
 
 class BlockResource(BroabResource):
     segments = fields.ToManyField(
@@ -177,6 +182,7 @@ class AnalogSignalResource(BroabResource):
         null=True,
         blank=True
         )
+    signal = fields.ListField(attribute='signal')
 
     class Meta(BroabResource.Meta):
         queryset = AnalogSignal.objects.all()
@@ -212,6 +218,7 @@ class SpikeTrainResource(BroabResource):
         null=True,
         blank=True
         )
+    times = fields.ListField(attribute='times')
 
     class Meta(BroabResource.Meta):
         queryset = SpikeTrain.objects.all()
@@ -222,12 +229,23 @@ class SpikeTrainResource(BroabResource):
             'unit': ALL_WITH_RELATIONS
         })
 
-    def dehydrate_times(self,bundle):
-        return ast.literal_eval(bundle.data['times'])
 
 class SpikeTrainFullResource(SpikeTrainResource):
-    class Meta(SpikeTrainResource.Meta):
+
+    waveforms = fields.ListField(attribute='waveforms')
+    concise = fields.ToOneField(
+        'broab.api.resources.SpikeTrainResource',
+        'spiketrain_ptr'
+        )
+
+    class Meta(BroabResource.Meta):
         queryset = SpikeTrainFull.objects.all()
+        resource_name = 'spiketrainfull'
+        filtering = BROAB_FILTERING
+        filtering.update({
+            'sort': ALL,
+        })
+
         
 
 class EventTypeResource(BroabResource):
@@ -238,7 +256,7 @@ class EventTypeResource(BroabResource):
 
     class Meta(BroabResource.Meta):
         queryset = EventType.objects.all()
-        resource_name = 'event_type'
+        resource_name = 'label'
         filtering = LOOKUP_FILTERING
         filtering.update({
             'events': ALL_WITH_RELATIONS,
@@ -261,5 +279,5 @@ class EventResource(BroabResource):
         filtering = BROAB_FILTERING
         filtering.update({
             'segment': ALL_WITH_RELATIONS,
-            'event_type': ALL,
+            'label': ALL_WITH_RELATIONS,
         })

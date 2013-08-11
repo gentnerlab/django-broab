@@ -12,6 +12,7 @@ v1_api.register(UnitResource())
 v1_api.register(AnalogSignalResource())
 v1_api.register(IrregularlySampledSignalResource())
 v1_api.register(SpikeTrainResource())
+v1_api.register(SpikeTrainFullResource())
 v1_api.register(EventResource())
 v1_api.register(EventTypeResource())
 

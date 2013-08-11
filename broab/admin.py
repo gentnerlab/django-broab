@@ -248,10 +248,10 @@ class SpikeTrainAdmin(admin.ModelAdmin):
         'unit',
         )
 
-    list_display = ('spike_times','segment',)
+    list_display = ('num_spikes','unit','segment',)
     fieldsets = (
         (None, {
-            'fields': ('spike_times','unit','segment',('t_start','t_stop')),
+            'fields': ('unit','segment',('t_start','t_stop'),'spike_times',),
          }),
         ('Meta', {
             'fields': ('name', 'description', 'annotations'),
@@ -277,10 +277,13 @@ class SpikeTrainAdmin(admin.ModelAdmin):
         'segment__block__annotations',
         'segment__block__file_origin',
         ]
-    readonly_fields = ('spike_times','created','modified')
+    readonly_fields = ('spike_times','created','modified','num_spikes')
+
+    def num_spikes(self,instance):
+        return str(len(instance.times))
 
     def spike_times(self,instance):
-        return ','.join([("%0.2f" % t) for t in instance.times]).join(['[',']'])[:64]
+        return ',\n'.join([("%f" % t) for t in instance.times]).join(['[\n','\n]'])
 
 admin.site.register(SpikeTrain,SpikeTrainAdmin)
 

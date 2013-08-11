@@ -236,6 +236,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         for filename in args:
+            # TODO: change reader based on filetype
             reader = io.NeoHdf5IO(filename)
 
             if core.block.Block in reader.readable_objects:
