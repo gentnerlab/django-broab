@@ -219,6 +219,10 @@ class SpikeTrainResource(BroabResource):
         blank=True
         )
     times = fields.ListField(attribute='times')
+    full = fields.ToOneField(
+        'broab.api.resources.SpikeTrainFullResource',
+        'spiketrainfull'
+        )
 
     class Meta(BroabResource.Meta):
         queryset = SpikeTrain.objects.all()
