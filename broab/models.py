@@ -37,7 +37,7 @@ CURRENT_CHOICES = (
     )
 
 # Models modeled after those in Neo.core
-class BaseModel(models.Model):
+class BroabModel(models.Model):
     """ abstract base class for all Neo Models"""
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
@@ -76,13 +76,13 @@ class EventType(Lookup):
         return self.name 
 
 # Container Models
-class ContainerModel(BaseModel):
+class ContainerModel(BroabModel):
     """ abstract base class for Neo Containers """
     file_datetime = models.DateTimeField(null=True,blank=True)
     rec_datetime = models.DateTimeField(null=True,blank=True)
     index = models.PositiveIntegerField(null=True,blank=True)
 
-    class Meta(BaseModel.Meta):
+    class Meta(BroabModel.Meta):
         abstract = True
         ordering = ['-rec_datetime','-file_datetime','index']
 
@@ -115,9 +115,9 @@ class Segment(ContainerModel):
     block = models.ForeignKey(Block,null=True,blank=True,related_name='segments')
 
 # Grouping Models
-class GroupModel(BaseModel):
+class GroupModel(BroabModel):
     """ abstract base class for Neo Grouping Objects """
-    class Meta(BaseModel.Meta):
+    class Meta(BroabModel.Meta):
         abstract = True
 
 class RecordingChannelGroup(GroupModel):
@@ -182,7 +182,7 @@ class Unit(GroupModel):
         return '%s(%s)' % (self.id,self.recording_channel_group)
 
 # Data Models
-class DataModel(BaseModel):
+class DataModel(BroabModel):
     """ abstract base class for Neo Data """
 
     """ CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
@@ -190,7 +190,7 @@ class DataModel(BaseModel):
     DataModel objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
     segment = models.ForeignKey(Segment,related_name="%(class)ss")
 
-    class Meta(BaseModel.Meta):
+    class Meta(BroabModel.Meta):
         abstract = True
 
 class AnalogSignal(DataModel):
@@ -285,4 +285,7 @@ class Event(DataModel):
     duration = models.FloatField(null=True,blank=True)
 
     def __unicode__(self):
-        return "%s" % (self.time)    
+        return "%s" % (self.time)
+
+class EventArray(BroabModel):
+    pass
