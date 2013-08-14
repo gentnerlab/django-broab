@@ -274,8 +274,6 @@ class SpikeTrainFull(SpikeTrain):
     left_sweep = models.FloatField(null=True,blank=True)
     sort = models.BooleanField(default=False)
 
-
-
 class Event(DataModel):
     """A time point representng an event in the data
 
@@ -287,5 +285,4 @@ class Event(DataModel):
     def __unicode__(self):
         return "%s" % (self.time)
 
-class EventArray(BroabModel):
-    pass
+
