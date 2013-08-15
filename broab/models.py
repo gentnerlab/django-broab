@@ -38,7 +38,7 @@ CURRENT_CHOICES = (
 
 # Models modeled after those in Neo.core
 class BroabModel(models.Model):
-    """ abstract base class for all Neo Models"""
+    ''' abstract base class for all Neo Models'''
     name = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
     file_origin = models.CharField(max_length=255,blank=True)
@@ -59,7 +59,7 @@ class BroabModel(models.Model):
 
 # Lookup Tables
 class Lookup(models.Model):
-    """ abstract base class for all lookup tables """
+    ''' abstract base class for all lookup tables '''
     name = models.CharField(max_length=255,blank=False,unique=True)
     description = models.TextField(blank=True)
 
@@ -70,14 +70,14 @@ class Lookup(models.Model):
         abstract = True
         ordering = ['name'] 
 
-class EventType(Lookup):
-    """ a type of event """
+class EventLabel(Lookup):
+    ''' the label for an event '''
     def __unicode__(self):
         return self.name 
 
 # Container Models
 class ContainerModel(BroabModel):
-    """ abstract base class for Neo Containers """
+    ''' abstract base class for Neo Containers '''
     file_datetime = models.DateTimeField(null=True,blank=True)
     rec_datetime = models.DateTimeField(null=True,blank=True)
     index = models.PositiveIntegerField(null=True,blank=True)
@@ -87,19 +87,19 @@ class ContainerModel(BroabModel):
         ordering = ['-rec_datetime','-file_datetime','index']
 
 class Block(ContainerModel):
-    """
+    '''
 
     The top-level container gathering all of the data, discrete and
     continuous, for a given recording session. 
 
     Contains Segment and RecordingChannelGroup objects.
 
-    """
+    '''
     pass
 
        
 class Segment(ContainerModel):
-    """ Segment
+    ''' Segment
 
     A container for heterogeneous discrete or continous data sharing a 
     common clock (time basis) but not necessarily the same sampling rate, 
@@ -110,18 +110,18 @@ class Segment(ContainerModel):
 
     May contain any of the data objects 
 
-    """
+    '''
 
     block = models.ForeignKey(Block,null=True,blank=True,related_name='segments')
 
 # Grouping Models
 class GroupModel(BroabModel):
-    """ abstract base class for Neo Grouping Objects """
+    ''' abstract base class for Neo Grouping Objects '''
     class Meta(BroabModel.Meta):
         abstract = True
 
 class RecordingChannelGroup(GroupModel):
-    """A group for associated RecordingChannel objects. 
+    '''A group for associated RecordingChannel objects. 
 
     This has several possible uses:
     - for linking several AnalogSignalArray objects across several Segment 
@@ -138,25 +138,25 @@ class RecordingChannelGroup(GroupModel):
         arrays, RecordingChannelGroup is used to gather all 
         RecordingChannel objects of the same array.
     
-    """
+    '''
     block = models.ForeignKey(Block,null=True,blank=True,related_name='recording_channel_groups')
     recording_channels = models.ManyToManyField('RecordingChannel',related_name='recording_channel_groups')
 
     def channel_names(self):
-        """get names of associated recording channels"""
+        '''get names of associated recording channels'''
         pass
     def channel_indexes(self):
-        """get indices of associated recording channels"""
+        '''get indices of associated recording channels'''
         pass
 
 
 class RecordingChannel(GroupModel):
-    """
+    '''
 
     Links AnalogSignal, SpikeTrain objects that come from the same logical 
     and/or physical channel inside a Block, possibly across several Segment 
     objects.
-    """
+    '''
 
     index = models.PositiveIntegerField(blank=False,null=False)
 
@@ -168,14 +168,14 @@ class RecordingChannel(GroupModel):
     coord_units = models.CharField(max_length=255,choices=DISTANCE_CHOICES,blank=True)
 
 class Unit(GroupModel):
-    """
+    '''
 
     A Unit gathers all the SpikeTrain objects within a common Block, 
     possibly across several Segments, that have been emitted by the same 
     cell. 
 
     A Unit is linked to RecordingChannelGroup objects from which it was detected.
-    """
+    '''
     recording_channel_group = models.ForeignKey('RecordingChannelGroup',null=True,blank=True)
 
     def __unicode__(self):
@@ -183,18 +183,18 @@ class Unit(GroupModel):
 
 # Data Models
 class DataModel(BroabModel):
-    """ abstract base class for Neo Data """
+    ''' abstract base class for Neo Data '''
 
-    """ CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
+    ''' CAUTION: defining the related_name as '%(class)s' and dropping the '%(app_label)' reference.
     This will cause problems if DataModel is inherited from any other apps, but will ensure that all 
-    DataModel objects defined here will conform to the Neo standard, i.e. segement.analog_signals """
+    DataModel objects defined here will conform to the Neo standard, i.e. segement.analog_signals '''
     segment = models.ForeignKey(Segment,related_name="%(class)ss")
 
     class Meta(BroabModel.Meta):
         abstract = True
 
 class AnalogSignal(DataModel):
-    """A regular sampling of a continuous, analog signal."""
+    '''A regular sampling of a continuous, analog signal.'''
 
     t_start = models.FloatField(default=0.0)
     t_units = models.CharField(max_length=16,choices=TIME_CHOICES,blank=True)
@@ -207,7 +207,7 @@ class AnalogSignal(DataModel):
 
     @property
     def sampling_period(self):
-        """ 1/sampling_rate """
+        ''' 1/sampling_rate '''
         return 1.0/self.sampling_rate
 
     @sampling_period.setter
@@ -216,12 +216,12 @@ class AnalogSignal(DataModel):
 
     @property
     def duration(self):
-        """ len(signal)*sampling_period """
+        ''' len(signal)*sampling_period '''
         return float(len(self.signal))*self.sampling_period
 
     @property
     def t_stop(self):
-        """ t_start + duration """
+        ''' t_start + duration '''
         return self.t_start + self.duration
 
     def __unicode__(self):
@@ -229,12 +229,12 @@ class AnalogSignal(DataModel):
 
 
 class IrregularlySampledSignal(DataModel):
-    """
+    '''
     
     A representation of a continuous, analog signal acquired at time 
     t_start with a varying sampling interval.
 
-    """
+    '''
 
     recording_channel = models.ForeignKey(RecordingChannel)
 
@@ -247,12 +247,12 @@ class IrregularlySampledSignal(DataModel):
         return str(len(self.times))
  
 class SpikeTrain(DataModel):
-    """
+    '''
 
     A set of action potentials (spikes) emitted by the same unit in a 
     period of time (with optional waveforms).
 
-    """
+    '''
     times = ArrayField(dbtype="float(53)",dimension=1) # dimensions: [spike_time]
     t_start = models.FloatField(default=0.0)
     t_stop = models.FloatField()
@@ -264,9 +264,9 @@ class SpikeTrain(DataModel):
         return str(len(self.times))
 
 class SpikeTrainFull(SpikeTrain):
-    """
+    '''
     the optional waveforms
-    """
+    '''
 
     waveforms = ArrayField(dbtype="float(53)",dimension=3) #  dimensions: [spike,channel,time]
     waveform_units = models.CharField(max_length=255,choices=POTENTIAL_CHOICES)
@@ -275,11 +275,11 @@ class SpikeTrainFull(SpikeTrain):
     sort = models.BooleanField(default=False)
 
 class Event(DataModel):
-    """A time point representng an event in the data
+    '''A time point representng an event in the data
 
-    """
+    '''
     time = models.FloatField()
-    label = models.ForeignKey(EventType)
+    label = models.ForeignKey(EventLabel)
     duration = models.FloatField(null=True,blank=True)
 
     def __unicode__(self):

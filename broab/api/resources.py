@@ -6,7 +6,7 @@ from tastypie.authorization import DjangoAuthorization
 from broab.models import Block, Segment
 from broab.models import RecordingChannelGroup, RecordingChannel, Unit
 from broab.models import AnalogSignal, IrregularlySampledSignal, SpikeTrain, SpikeTrainFull, Event
-from broab.models import EventType
+from broab.models import EventLabel
 from tastypie.serializers import Serializer
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 
@@ -252,14 +252,14 @@ class SpikeTrainFullResource(SpikeTrainResource):
 
         
 
-class EventTypeResource(BroabResource):
+class EventLabelResource(BroabResource):
     # events = fields.ToManyField(
     #     'broab.api.resources.EventResource',
     #     'event_set'
     #     )
 
     class Meta(BroabResource.Meta):
-        queryset = EventType.objects.all()
+        queryset = EventLabel.objects.all()
         resource_name = 'label'
         filtering = LOOKUP_FILTERING
         filtering.update({
@@ -272,7 +272,7 @@ class EventResource(BroabResource):
         'segment'
         )
     label = fields.ToOneField(
-        'broab.api.resources.EventTypeResource',
+        'broab.api.resources.EventLabelResource',
         'label',
         full=True
         )

@@ -3,7 +3,7 @@ from django import forms
 from broab.models import Block, Segment
 from broab.models import RecordingChannelGroup, RecordingChannel, Unit
 from broab.models import AnalogSignal, SpikeTrain, Event
-from broab.models import EventType
+from broab.models import EventLabel
 from djorm_pgarray.fields import ArrayFormField
 
 SEARCH_FIELDS = ['name','description','annotations']
@@ -328,5 +328,5 @@ class EventAdmin(admin.ModelAdmin):
     readonly_fields = ('created','modified')
 admin.site.register(Event,EventAdmin)
 
-admin.site.register(EventType)
+admin.site.register(EventLabel)
 
