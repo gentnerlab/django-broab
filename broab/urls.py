@@ -14,10 +14,9 @@ v1_api.register(IrregularlySampledSignalResource())
 v1_api.register(SpikeTrainResource())
 v1_api.register(SpikeTrainFullResource())
 v1_api.register(EventResource())
-v1_api.register(EventTypeResource())
-
+v1_api.register(EventLabelResource())
 
 urlpatterns = patterns('',
     # api urls
-    url(r'^probe/', include(v1_api.urls)),
+    url(r'^api/', include(v1_api.urls)),
 )
