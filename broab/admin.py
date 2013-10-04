@@ -33,7 +33,7 @@ class RecordingChannelGroupInline(admin.StackedInline):
 
 # admin forms
 class BlockAdmin(admin.ModelAdmin):
-    list_display = ('name','index','rec_datetime')
+    list_display = ('name','index','rec_datetime','file_origin','file_datetime','modified')
     fieldsets = (
         (None, {
             'fields': ('index', 'rec_datetime'),
@@ -60,7 +60,7 @@ class BlockAdmin(admin.ModelAdmin):
 admin.site.register(Block,BlockAdmin)
 
 class SegmentAdmin(admin.ModelAdmin):
-    list_display = ('name','index','rec_datetime')
+    list_display = ('name','index','rec_datetime','file_origin','file_datetime','modified')
     list_filter = ('block','events__label')
     fieldsets = (
         (None, {
@@ -100,7 +100,7 @@ class SegmentAdmin(admin.ModelAdmin):
 admin.site.register(Segment,SegmentAdmin)
 
 class RecordingChannelGroupAdmin(admin.ModelAdmin):
-    list_display = ('pk','name','block',)
+    list_display = ('name','id','num_chans','modified')
     list_filter = ('block',)
     fieldsets = (
         (None, {
@@ -127,11 +127,14 @@ class RecordingChannelGroupAdmin(admin.ModelAdmin):
         'block__annotations',
         'block__file_origin',
         ]
-    readonly_fields = ('created','modified')
+    readonly_fields = ('created','modified','num_chans')
+    def num_chans(self,instance):
+        return instance.recording_channels.count()
+
 admin.site.register(RecordingChannelGroup,RecordingChannelGroupAdmin)
 
 class RecordingChannelAdmin(admin.ModelAdmin):
-    list_display = ('index','x_coord','y_coord','z_coord','coord_units')
+    list_display = ('index','name','x_coord','y_coord','z_coord','coord_units','modified')
     list_filter = ('recording_channel_groups__block','recording_channel_groups',)
     fieldsets = (
         (None, {
@@ -159,7 +162,7 @@ admin.site.register(RecordingChannel,RecordingChannelAdmin)
 
 class UnitAdmin(admin.ModelAdmin):
     list_filter = ('recording_channel_group__block',)
-    list_display = ('recording_channel_group','name')
+    list_display = ('id','name','modified')
     fieldsets = (
         (None, {
             'fields': ('recording_channel_group',),
@@ -200,7 +203,7 @@ class AnalogSignalAdmin(admin.ModelAdmin):
         'segment',
         )
 
-    list_display = ('t_start','segment','recording_channel')
+    list_display = ('t_start','t_units','sampling_rate','modified')
     fieldsets = (
         (None, {
             'fields': (
@@ -248,7 +251,7 @@ class SpikeTrainAdmin(admin.ModelAdmin):
         'unit',
         )
 
-    list_display = ('num_spikes','unit','segment',)
+    list_display = ('id','num_spikes','t_start','t_stop','modified')
     fieldsets = (
         (None, {
             'fields': ('unit','segment',('t_start','t_stop'),'spike_times',),
@@ -289,7 +292,7 @@ admin.site.register(SpikeTrain,SpikeTrainAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('time','duration','label','segment')
+    list_display = ('name','time','duration','modified')
     list_filter = (
         'segment__block',
         'segment',
