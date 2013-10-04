@@ -23,7 +23,19 @@ BROAB_FILTERING = {
     'description': ALL,
     'file_origin': ALL,
     'annotations': ALL,
+    'created': ALL,
+    'modified': ALL,
     }
+
+CONTAINER_FILTERING = {
+    'file_datetime': ALL,
+    'rec_datetime': ALL,
+    'index': ALL,
+}
+
+DATA_FILTERING = {
+    'segment': ALL_WITH_RELATIONS,
+}
 
 class BroabResource(ModelResource):
 
@@ -31,9 +43,6 @@ class BroabResource(ModelResource):
     class Meta():
         authentication = BasicAuthentication()
         authorization = DjangoAuthorization()
-
-    # def dehydrate_annotations(self,bundle):
-    #     return ast.literal_eval(bundle.data['annotations'])
 
 class BlockResource(BroabResource):
     segments = fields.ToManyField(
@@ -53,10 +62,12 @@ class BlockResource(BroabResource):
         queryset = Block.objects.all()
         resource_name = 'block'
         filtering = BROAB_FILTERING
+        filtering.update(CONTAINER_FILTERING)
         filtering.update({
             'segments': ALL_WITH_RELATIONS,
             'recording_channel_groups': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 
 class SegmentResource(BroabResource):
@@ -95,6 +106,7 @@ class SegmentResource(BroabResource):
         queryset = Segment.objects.all()
         resource_name = 'segment'
         filtering = BROAB_FILTERING
+        filtering.update(CONTAINER_FILTERING)
         filtering.update({
             'block': ALL_WITH_RELATIONS,
             'analogsignals': ALL_WITH_RELATIONS,
@@ -102,6 +114,7 @@ class SegmentResource(BroabResource):
             'spiketrains': ALL_WITH_RELATIONS,
             'events': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class RecordingChannelGroupResource(BroabResource):
     recording_channels = fields.ToManyField(
@@ -122,9 +135,11 @@ class RecordingChannelGroupResource(BroabResource):
         resource_name = 'recording_channel_group'
         filtering = BROAB_FILTERING
         filtering.update({
+            'block': ALL_WITH_RELATIONS,
             'recording_channels': ALL_WITH_RELATIONS,
             'units': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class RecordingChannelResource(BroabResource):
     analog_signals = fields.ToManyField(
@@ -144,9 +159,14 @@ class RecordingChannelResource(BroabResource):
         resource_name = 'recording_channel'
         filtering = BROAB_FILTERING
         filtering.update({
+            'index': ALL,
+            'x_coord': ALL,
+            'y_coord': ALL,
+            'z_coord': ALL,
             'analog_signals': ALL_WITH_RELATIONS,
             'recording_channel_groups': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class UnitResource(BroabResource):
     recording_channel_group = fields.ToOneField(
@@ -170,6 +190,7 @@ class UnitResource(BroabResource):
             'spike_trains': ALL_WITH_RELATIONS,
             'recording_channel_group': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class AnalogSignalResource(BroabResource):
     segment = fields.ToOneField(
@@ -188,10 +209,16 @@ class AnalogSignalResource(BroabResource):
         queryset = AnalogSignal.objects.all()
         resource_name = 'analog_signal'
         filtering = BROAB_FILTERING
+        filtering.update(DATA_FILTERING)
         filtering.update({
-            'segment': ALL_WITH_RELATIONS,
+            't_start': ALL,
+            't_units': ALL,
+            'signal': ALL,
+            'signal_units': ALL,
+            'sampling_rate': ALL,
             'recording_channel': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class IrregularlySampledSignalResource(BroabResource):
     segment = fields.ToOneField(
@@ -203,9 +230,15 @@ class IrregularlySampledSignalResource(BroabResource):
         queryset = IrregularlySampledSignal.objects.all()
         resource_name = 'irregularly_sampled_signal'
         filtering = BROAB_FILTERING
+        filtering.update(DATA_FILTERING)
         filtering.update({
-            'segment': ALL_WITH_RELATIONS,
+            'times': ALL,
+            't_units': ALL,
+            'signal': ALL,
+            'signal_units': ALL,
+            'recording_channel': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class SpikeTrainResource(BroabResource):
     segment = fields.ToOneField(
@@ -221,17 +254,24 @@ class SpikeTrainResource(BroabResource):
     times = fields.ListField(attribute='times')
     full = fields.ToOneField(
         'broab.api.resources.SpikeTrainFullResource',
-        'spiketrainfull'
+        'spiketrainfull',
+        null=True,
+        blank=True
         )
 
     class Meta(BroabResource.Meta):
         queryset = SpikeTrain.objects.all()
         resource_name = 'spiketrain'
         filtering = BROAB_FILTERING
+        filtering.update(DATA_FILTERING)
         filtering.update({
-            'segment': ALL_WITH_RELATIONS,
-            'unit': ALL_WITH_RELATIONS
+            'times': ALL,
+            't_start': ALL,
+            't_stop': ALL,
+            't_units': ALL,
+            'unit': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 
 class SpikeTrainFullResource(SpikeTrainResource):
@@ -246,12 +286,16 @@ class SpikeTrainFullResource(SpikeTrainResource):
         queryset = SpikeTrainFull.objects.all()
         resource_name = 'spiketrainfull'
         filtering = BROAB_FILTERING
+        filtering.update(DATA_FILTERING)
         filtering.update({
+            'waveforms': ALL,
+            'waveform_units': ALL,
+            'sampling_rate': ALL,
+            'left_sweep': ALL,
             'sort': ALL,
         })
-
+        ordering = filtering.keys()
         
-
 class EventLabelResource(BroabResource):
     # events = fields.ToManyField(
     #     'broab.api.resources.EventResource',
@@ -265,6 +309,7 @@ class EventLabelResource(BroabResource):
         filtering.update({
             'events': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
 
 class EventResource(BroabResource):
     segment = fields.ToOneField(
@@ -281,7 +326,10 @@ class EventResource(BroabResource):
         queryset = Event.objects.all()
         resource_name = 'event'
         filtering = BROAB_FILTERING
+        filtering.update(DATA_FILTERING)
         filtering.update({
-            'segment': ALL_WITH_RELATIONS,
+            'time': ALL,
+            'duration': ALL,
             'label': ALL_WITH_RELATIONS,
         })
+        ordering = filtering.keys()
