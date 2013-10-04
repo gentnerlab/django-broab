@@ -84,7 +84,6 @@ class ContainerModel(BroabModel):
 
     class Meta(BroabModel.Meta):
         abstract = True
-        ordering = ['-rec_datetime','-file_datetime','index']
 
 class Block(ContainerModel):
     '''
